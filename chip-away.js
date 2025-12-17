@@ -1,17 +1,36 @@
 export class ChipAway extends HTMLElement {
+  #selectListeners = new Map();
+
   connectedCallback() {
-    this.addEventListener('change', this.#handleSelectChange);
+    this.#attachListeners();
     this.#render();
   }
 
   disconnectedCallback() {
-    this.removeEventListener('change', this.#handleSelectChange);
+    this.#detachListeners();
   }
 
-  #handleSelectChange = (event) => {
-    if (event.target.tagName === 'SELECT') {
-      this.#render();
-    }
+  #attachListeners() {
+    const idref = this.getAttribute('idref');
+    if (!idref) return;
+
+    const selectIds = idref.split(/\s+/).filter(Boolean);
+    
+    selectIds.forEach(id => {
+      const select = document.getElementById(id);
+      if (!select) return;
+
+      const listener = () => this.#render();
+      select.addEventListener('change', listener);
+      this.#selectListeners.set(id, { select, listener });
+    });
+  }
+
+  #detachListeners() {
+    this.#selectListeners.forEach(({ select, listener }) => {
+      select.removeEventListener('change', listener);
+    });
+    this.#selectListeners.clear();
   }
 
   #render() {
