@@ -27,7 +27,7 @@ Done! I've implemented the chip-away web component with the following files:
   - Watches for changes on referenced select elements
   - Renders fieldsets with legend labels and chip buttons for each selected option
   - Removes the option from selection when the X button is clicked
-  - Listens to the `idref` attribute to identify which select elements to monitor
+  - Listens to the `for` attribute to identify which select elements to monitor
 
 - **index.js** - Registers the web component with the canonical name "chip-away" using `customElements.define()`
 
@@ -69,7 +69,7 @@ GitHub Copilot: Using "Replace String in File"
 ```
 Fixed! The component now:
 
-1. **Directly attaches listeners** to each select element referenced in the `idref` attribute
+1. **Directly attaches listeners** to each select element referenced in the `for` attribute
 2. **Tracks listeners** in a Map so they can be properly removed on disconnection
 3. **Re-renders chips** whenever a select element's change event fires
 

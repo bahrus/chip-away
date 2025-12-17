@@ -44,15 +44,15 @@ Create your select elements and add the `<chip-away>` component:
     </select>
 </label>
 
-<chip-away idref="select1 select2"></chip-away>
+<chip-away for="select1 select2"></chip-away>
 ```
 
 ### How It Works
 
-The `chip-away` component monitors the select elements referenced in the `idref` attribute (space-separated IDs). When the user selects options, the component dynamically generates a visual representation:
+The `chip-away` component monitors the select elements referenced in the `for` attribute (space-separated IDs). When the user selects options, the component dynamically generates a visual representation:
 
 ```html
-<chip-away idref="select1 select2">
+<chip-away for="select1 select2">
     <fieldset>
         <legend>Select 1</legend>
         <label>
@@ -86,7 +86,7 @@ import { ChipAway } from './chip-away.js';
 customElements.define('my-custom-chips', ChipAway);
 ```
 
-Then use it as `<my-custom-chips idref="select1 select2"></my-custom-chips>`
+Then use it as `<my-custom-chips for="select1 select2"></my-custom-chips>`
 
 ## Extending with Custom Markup
 

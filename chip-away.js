@@ -1,3 +1,4 @@
+// @ts-check
 export class ChipAway extends HTMLElement {
   #selectListeners = new Map();
 
@@ -16,6 +17,11 @@ export class ChipAway extends HTMLElement {
     return root instanceof ShadowRoot ? root : document;
   }
 
+  /**
+   * 
+   * @param {string} id 
+   * @returns 
+   */
   #findElement(id) {
     const root = this.#getRoot();
     if (root instanceof ShadowRoot) {
@@ -25,10 +31,10 @@ export class ChipAway extends HTMLElement {
   }
 
   #attachListeners() {
-    const idref = this.getAttribute('idref');
-    if (!idref) return;
+    const forAttr = this.getAttribute('for');
+    if (!forAttr) return;
 
-    const selectIds = idref.split(/\s+/).filter(Boolean);
+    const selectIds = forAttr.split(/\s+/).filter(Boolean);
     
     selectIds.forEach(id => {
       const select = this.#findElement(id);
@@ -48,17 +54,17 @@ export class ChipAway extends HTMLElement {
   }
 
   render() {
-    const idref = this.getAttribute('idref');
-    if (!idref) return;
+    const forAttr = this.getAttribute('for');
+    if (!forAttr) return;
 
-    const selectIds = idref.split(/\s+/).filter(Boolean);
+    const selectIds = forAttr.split(/\s+/).filter(Boolean);
     
     // Clear existing fieldsets
     const existingFieldsets = this.querySelectorAll(':scope > fieldset');
     existingFieldsets.forEach(fs => fs.remove());
 
     selectIds.forEach(id => {
-      const select = this.#findElement(id);
+      const select = /** @type {HTMLSelectElement} */ (this.#findElement(id));
       if (!select) return;
 
       const selectedOptions = Array.from(select.selectedOptions)
@@ -69,6 +75,12 @@ export class ChipAway extends HTMLElement {
     });
   }
 
+  /**
+   * 
+   * @param {string} id 
+   * @param {HTMLSelectElement} select 
+   * @param {HTMLOptionElement[]} selectedOptions 
+   */
   createChips(id, select, selectedOptions) {
     const fieldset = document.createElement('fieldset');
     const legend = document.createElement('legend');
