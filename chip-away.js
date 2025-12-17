@@ -10,6 +10,20 @@ export class ChipAway extends HTMLElement {
     this.#detachListeners();
   }
 
+  #getRoot() {
+    // Check if this component is in a shadow DOM, otherwise use document
+    const root = this.getRootNode();
+    return root instanceof ShadowRoot ? root : document;
+  }
+
+  #findElement(id) {
+    const root = this.#getRoot();
+    if (root instanceof ShadowRoot) {
+      return root.getElementById(id);
+    }
+    return document.getElementById(id);
+  }
+
   #attachListeners() {
     const idref = this.getAttribute('idref');
     if (!idref) return;
@@ -17,7 +31,7 @@ export class ChipAway extends HTMLElement {
     const selectIds = idref.split(/\s+/).filter(Boolean);
     
     selectIds.forEach(id => {
-      const select = document.getElementById(id);
+      const select = this.#findElement(id);
       if (!select) return;
 
       const listener = () => this.#render();
@@ -44,7 +58,7 @@ export class ChipAway extends HTMLElement {
     existingFieldsets.forEach(fs => fs.remove());
 
     selectIds.forEach(id => {
-      const select = document.getElementById(id);
+      const select = this.#findElement(id);
       if (!select) return;
 
       const selectedOptions = Array.from(select.selectedOptions);
