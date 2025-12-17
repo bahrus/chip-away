@@ -89,7 +89,7 @@ export class ChipAway extends HTMLElement {
     legend.textContent = label;
     fieldset.appendChild(legend);
 
-    selectedOptions.forEach(option => {
+    for(const option of selectedOptions){
       const label = document.createElement('label');
       const button = document.createElement('button');
       button.type = 'button';
@@ -111,7 +111,8 @@ export class ChipAway extends HTMLElement {
       label.appendChild(span);
       label.appendChild(input);
       fieldset.appendChild(label);
-    });
+    }
+
 
     this.appendChild(fieldset);
   }
