@@ -65,11 +65,11 @@ export class ChipAway extends HTMLElement {
         .filter(option => option.value !== '');
       if (selectedOptions.length === 0) return;
 
-      this.createChip(id, select, selectedOptions);
+      this.createChips(id, select, selectedOptions);
     });
   }
 
-  createChip(id, select, selectedOptions) {
+  createChips(id, select, selectedOptions) {
     const fieldset = document.createElement('fieldset');
     const legend = document.createElement('legend');
     const label = select.parentElement?.querySelector('span')?.textContent || 
