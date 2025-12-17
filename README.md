@@ -1,42 +1,95 @@
 # chip-away
 
-*chip-away* is a web component package that provides an easy way to remove options from multiple select components and/or autocomplete input elements.
+*chip-away* is a web component that transforms selected options from HTML `<select>` elements into an interactive, visually-distinct chip interface. It provides users with an intuitive way to review, manage, and remove selected values through a clean, user-friendly UI.
 
-The name of the web component is flexible.  The canonical name, "chip-away" is only automatically registered if one references index.js.  To choose your own name, reference chip-away.js, which is where all the logic resides, and take of registering the name in the appropriate registry/registries.
+## Features
 
-## What chip-away does
+- **Automatic Chip Generation**: Converts selected options into visual chips
+- **Easy Deselection**: Click the × button on any chip to remove it instantly
+- **Multi-Select Support**: Monitor multiple select elements simultaneously
+- **Light DOM Children**: Renders chips as semantic HTML (fieldsets, labels, buttons)
+- **Flexible Naming**: Use the canonical name "chip-away" or customize it
+
+## Installation
+
+```bash
+npm install chip-away
+```
+
+## Usage
+
+### Basic Example
+
+Import the component in your HTML:
+
+```html
+<script type="module" src="node_modules/chip-away/index.js"></script>
+```
+
+Create your select elements and add the `<chip-away>` component:
 
 ```html
 <label>
     <span>Select 1</span>
-    <select id=select1 multiple>
-        <option selected value=option1>Option 1</option>
+    <select id="select1" multiple>
+        <option selected value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
     </select>
 </label>
+
 <label>
     <span>Select 2</span>
-    <select id=select2></select>
+    <select id="select2">
+        <option value="option3">Option 3</option>
+    </select>
 </label>
 
 <chip-away idref="select1 select2"></chip-away>
 ```
 
-Is the user selects options from select1 and select2, the chip-away web component adds light children for each selected option:
+### How It Works
+
+The `chip-away` component monitors the select elements referenced in the `idref` attribute (space-separated IDs). When the user selects options, the component dynamically generates a visual representation:
 
 ```html
 <chip-away idref="select1 select2">
-    <!-- only appears if one or more option is selected fro select1> -->
     <fieldset>
         <legend>Select 1</legend>
         <label>
             <button>&#10006;</button>
             <span>Option 1</span>
-            <input type=hidden value=select1>
+            <input type="hidden" value="select1">
+        </label>
+        <label>
+            <button>&#10006;</button>
+            <span>Option 2</span>
+            <input type="hidden" value="select1">
         </label>
     </fieldset>
 </chip-away>
 ```
 
-Clicking on the button causes that option to no longer be selected.
+Each selected option appears as a chip with:
+- An **× button** to remove the option from the select element
+- A **label** displaying the option text
+- A **hidden input** storing the select element's ID
+
+Clicking the × button automatically deselects the option and updates the chip display in real-time.
+
+## Custom Naming
+
+The component name is flexible. By default, importing `index.js` registers the component as `<chip-away>`. To use a custom name, import `chip-away.js` directly and register it yourself:
+
+```javascript
+import { ChipAway } from './chip-away.js';
+
+customElements.define('my-custom-chips', ChipAway);
+```
+
+Then use it as `<my-custom-chips idref="select1 select2"></my-custom-chips>`
+
+## License
+
+MIT
 
 
