@@ -72,7 +72,7 @@ export class ChipAway extends HTMLElement {
   createChip(id, select, selectedOptions) {
     const fieldset = document.createElement('fieldset');
     const legend = document.createElement('legend');
-    const label = select.previousElementSibling?.querySelector('span')?.textContent || 
+    const label = select.parentElement?.querySelector('span')?.textContent || 
                   select.id;
     legend.textContent = label;
     fieldset.appendChild(legend);
