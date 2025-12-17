@@ -134,14 +134,60 @@ customElements.define('custom-chips', CustomChipAway);
 
 ### Overridable Methods
 
-- **`render()`** - Called when the component connects or when a select element changes. Clears existing chips and iterates through all selected options, calling `createChip()` for each select element with selections. Override this to customize the overall rendering flow.
+The `ChipAway` component provides three methods that can be overridden to customize behavior and rendering:
 
-- **`createChip(id, select, selectedOptions)`** - Creates the HTML markup for a single select element's chips. Parameters:
-  - `id` - The ID of the select element
-  - `select` - The select element reference
-  - `selectedOptions` - Array of selected option elements
-  
-  Override this method to customize the chip HTML structure.
+#### `render()`
+Called when the component connects or when a select element changes. This method clears existing chips and orchestrates the overall rendering flow by iterating through all selected options.
+
+**Override this to:**
+- Customize the overall rendering flow
+- Add custom logic before or after chips are rendered
+- Control how multiple select elements are processed
+
+#### `createChipsContainer(id, select, selectedOptions)`
+Creates the container element (fieldset) that holds all chips for a specific select element.
+
+**Parameters:**
+- `id` - The ID of the select element
+- `select` - The HTMLSelectElement reference
+- `selectedOptions` - Array of selected HTMLOptionElement objects
+
+**Returns:**
+- An HTMLElement to serve as the container for chips
+
+**Override this to:**
+- Change the container structure (e.g., use a `<div>` instead of `<fieldset>`)
+- Customize the legend/title element
+- Add additional metadata or styling to the container
+
+#### `createChip(id, select, selectedOptions, option, container)`
+Creates the HTML markup for a single chip representing one selected option.
+
+**Parameters:**
+- `id` - The ID of the select element
+- `select` - The HTMLSelectElement reference
+- `selectedOptions` - Array of selected option elements
+- `option` - The current HTMLOptionElement being rendered
+- `container` - The parent container element to append the chip to
+
+**Override this to:**
+- Customize individual chip HTML structure
+- Change styling or layout of chips
+- Modify button behavior or labels
+- Add additional elements or data attributes
+
+#### `createChips(id, select, selectedOptions)`
+Orchestrates the creation of all chips for a specific select element. Calls `createChipsContainer()` and then `createChip()` for each selected option.
+
+**Parameters:**
+- `id` - The ID of the select element
+- `select` - The HTMLSelectElement reference
+- `selectedOptions` - Array of selected option elements
+
+**Override this to:**
+- Customize how the container and chips are created together
+- Add custom processing or filtering of options
+- Control the order or grouping of chips
 
 ## License
 
