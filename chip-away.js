@@ -61,7 +61,8 @@ export class ChipAway extends HTMLElement {
       const select = this.#findElement(id);
       if (!select) return;
 
-      const selectedOptions = Array.from(select.selectedOptions);
+      const selectedOptions = Array.from(select.selectedOptions)
+        .filter(option => option.value !== '');
       if (selectedOptions.length === 0) return;
 
       this.createChip(id, select, selectedOptions);
