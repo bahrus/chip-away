@@ -76,18 +76,29 @@ export class ChipAway extends HTMLElement {
   }
 
   /**
-   * 
+   * Render the chip container for a given select element
+   * @param {string} id 
+   * @param {HTMLSelectElement} select 
+   * @param {HTMLOptionElement[]} selectedOptions 
+   */
+  createChipsContainer(id, select, selectedOptions) {
+      const fieldset = document.createElement('fieldset');
+      const legend = document.createElement('legend');
+      const label = select.parentElement?.querySelector('span')?.textContent || 
+                    select.id;
+      legend.textContent = label;
+      fieldset.appendChild(legend);
+      return fieldset;
+  }
+
+  /**
+   * Render the chips for a given select element
    * @param {string} id 
    * @param {HTMLSelectElement} select 
    * @param {HTMLOptionElement[]} selectedOptions 
    */
   createChips(id, select, selectedOptions) {
-    const fieldset = document.createElement('fieldset');
-    const legend = document.createElement('legend');
-    const label = select.parentElement?.querySelector('span')?.textContent || 
-                  select.id;
-    legend.textContent = label;
-    fieldset.appendChild(legend);
+    const container = this.createChipsContainer(id, select, selectedOptions);
 
     for(const option of selectedOptions){
       const label = document.createElement('label');
@@ -110,10 +121,10 @@ export class ChipAway extends HTMLElement {
       label.appendChild(button);
       label.appendChild(span);
       label.appendChild(input);
-      fieldset.appendChild(label);
+      container.appendChild(label);
     }
 
 
-    this.appendChild(fieldset);
+    this.appendChild(container);
   }
 }
