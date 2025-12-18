@@ -90,47 +90,8 @@ Then use it as `<my-custom-chips for="select1 select2"></my-custom-chips>`
 
 ## Extending with Custom Markup
 
-The component is designed to be subclassed for custom rendering. Override the `createChip()` method to render chips with your own HTML structure:
+The component is designed to be subclassed for custom rendering. Override the methods render, createChipContainer and createChip method to define your own HTML structure.
 
-```javascript
-import { ChipAway } from './chip-away.js';
-
-class CustomChipAway extends ChipAway {
-  createChip(id, select, selectedOptions) {
-    const container = document.createElement('div');
-    container.className = 'custom-chip-container';
-    
-    const title = document.createElement('h3');
-    title.textContent = select.previousElementSibling?.querySelector('span')?.textContent || select.id;
-    container.appendChild(title);
-
-    selectedOptions.forEach(option => {
-      const chip = document.createElement('div');
-      chip.className = 'chip';
-      
-      const text = document.createElement('span');
-      text.textContent = option.textContent;
-      chip.appendChild(text);
-
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'chip-close';
-      closeBtn.textContent = '×';
-      closeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        option.selected = false;
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-      chip.appendChild(closeBtn);
-      
-      container.appendChild(chip);
-    });
-
-    this.appendChild(container);
-  }
-}
-
-customElements.define('custom-chips', CustomChipAway);
-```
 
 ### Overridable Methods
 
