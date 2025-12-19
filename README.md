@@ -88,6 +88,16 @@ customElements.define('my-custom-chips', ChipAway);
 
 Then use it as `<my-custom-chips for="select1 select2"></my-custom-chips>`
 
+## VS Code Extension: idref
+
+When working with the `for` attribute in your HTML markup, the [idref](https://marketplace.visualstudio.com/items?itemName=andersonbruceb.idref) VS Code extension can make navigating between the `<chip-away>` element and its referenced select elements much easier.
+
+The extension adds "Go to Definition" functionality, allowing you to:
+- **Ctrl+Click** (or **Cmd+Click** on Mac) on any ID in the `for` attribute to instantly jump to the corresponding element
+- Navigate seamlessly between `<chip-away for="select1 select2">` and the actual `<select>` elements with matching IDs
+
+This is especially helpful when managing multiple select elements across your HTML file.
+
 ## Extending with Custom Markup
 
 The component is designed to be subclassed for custom rendering. Override the methods render, createChipContainer and createChip method to define your own HTML structure.
