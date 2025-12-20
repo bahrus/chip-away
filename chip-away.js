@@ -85,9 +85,23 @@ export class ChipAway extends HTMLElement {
   createChipsContainer(id, select, selectedOptions) {
       const fieldset = document.createElement('fieldset');
       const legend = document.createElement('legend');
-      const label = select.parentElement?.querySelector('span')?.textContent || 
-                    select.id;
-      legend.textContent = label;
+      
+      let legendText = select.id; // default fallback
+      
+      // Check if the select is contained inside a label element
+      let parentLabel = select.closest('label');
+      if (parentLabel) {
+        legendText = parentLabel.textContent.replace(select.textContent, '').trim();
+      } else if (select.id) {
+        // Check if there's a label element with a for attribute matching the select's id
+        const root = this.#getRoot();
+        const labelWithFor = root.querySelector(`label[for="${select.id}"]`);
+        if (labelWithFor) {
+          legendText = labelWithFor.textContent;
+        }
+      }
+      
+      legend.textContent = legendText;
       fieldset.appendChild(legend);
       return fieldset;
   }
