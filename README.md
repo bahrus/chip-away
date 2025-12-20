@@ -81,7 +81,7 @@ Clicking the × button automatically deselects the option and updates the chip d
 The component name is flexible. By default, importing `index.js` registers the component as `<chip-away>`. To use a custom name, import `chip-away.js` directly and register it yourself:
 
 ```javascript
-import { ChipAway } from './chip-away.js';
+import { ChipAway } from 'chip-away/chip-away.js';
 
 customElements.define('my-custom-chips', ChipAway);
 ```
