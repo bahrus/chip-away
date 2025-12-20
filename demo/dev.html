@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <label>
         <span>Select 1</span>
@@ -27,5 +29,60 @@
     <chip-away for="select1 select2"></chip-away>
 
     <script type="module" src="../index.js"></script>
+    <style>
+        chip-away {
+            label {
+                display: inline-flex;
+                align-items: center;
+                background-color: #e0e0e0;
+                border-radius: 16px;
+                padding: 6px 12px;
+                margin: 4px;
+                font-family: 'Roboto', sans-serif;
+                font-size: 14px;
+                cursor: pointer;
+                transition: background-color 0.2s ease, box-shadow 0.2s ease;
+                user-select: none;
+            }
+
+            label:hover {
+                background-color: #d5d5d5;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            label button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: none;
+                border: none;
+                color: #616161;
+                font-size: 16px;
+                width: 18px;
+                height: 18px;
+                margin-right: 6px;
+                padding: 0;
+                cursor: pointer;
+                border-radius: 50%;
+                transition: background-color 0.2s ease, color 0.2s ease;
+            }
+
+            label button:hover {
+                background-color: rgba(0, 0, 0, 0.1);
+                color: #424242;
+            }
+
+            label button:active {
+                background-color: rgba(0, 0, 0, 0.2);
+            }
+
+            label span {
+                line-height: 1;
+                color: #212121;
+            }
+        }
+    </style>
+
 </body>
+
 </html>

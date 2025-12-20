@@ -56,14 +56,14 @@ The `chip-away` component monitors the select elements referenced in the `for` a
     <fieldset>
         <legend>Select 1</legend>
         <label>
-            <button>&#10006;</button>
             <span>Option 1</span>
             <input type="hidden" value="select1">
+            <button>&#10006;</button>
         </label>
         <label>
-            <button>&#10006;</button>
             <span>Option 2</span>
             <input type="hidden" value="select1">
+            <button>&#10006;</button>
         </label>
     </fieldset>
 </chip-away>

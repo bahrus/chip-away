@@ -117,10 +117,10 @@ export class ChipAway extends HTMLElement {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.value = id;
-
-      label.appendChild(button);
+      
       label.appendChild(span);
       label.appendChild(input);
+      label.appendChild(button);
       container.appendChild(label);   
   }
 
