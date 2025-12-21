@@ -17,11 +17,11 @@ export class ChipAway extends O {
     compacts: {
       when_for_changes_call_render: 0,
     },
-    actions: {
-      render: {
-        ifKeyIn: ['for'],
-      },
-    },
+    // actions: {
+    //   render: {
+    //     ifKeyIn: ['for'],
+    //   },
+    // },
     handlers: {
       // Listen for change events on monitored select elements
     },
