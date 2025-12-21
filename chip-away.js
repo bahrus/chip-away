@@ -5,6 +5,9 @@ import {O} from 'trans-render/froop/O.js';
 
 
 export class ChipAway extends O {
+
+  /** @type {WeakMap<HTMLElement, HTMLElement>} */
+  #refs = new WeakMap();
   /** @type {OConfig<AllProps, Actions>} */ 
   static config = {
     propInfo: {
@@ -15,7 +18,7 @@ export class ChipAway extends O {
       },
     },
     compacts: {
-      when_for_changes_call_render: 0,
+      when_for_changes_call_hydrate: 0,
     },
     // actions: {
     //   render: {
@@ -152,7 +155,7 @@ export class ChipAway extends O {
    * @param {ChipAway} self
    * @returns {PAP}
    */
-  render(self) {
+  hydrate(self) {
     const { for: forAttr } = self;
     if (!forAttr) return {};
 
@@ -168,7 +171,7 @@ export class ChipAway extends O {
       if (!select) return;
 
       // Attach change listener
-      const listener = () => this.render(self);
+      const listener = () => this.hydrate(self);
       select.addEventListener('change', listener);
 
       // Render chips
