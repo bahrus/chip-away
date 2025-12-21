@@ -17,16 +17,15 @@ export class ChipAway extends O {
     compacts: {
       when_for_changes_call_render: 0,
     },
-    // actions: {
-    //   render: {
-    //     ifKeyIn: ['for'],
-    //   },
-    // },
     handlers: {
       // Listen for change events on monitored select elements
     },
 
   };
+
+  disconnectedCallback(){
+    if(this.#ac) this.#ac.abort();
+  }
 
   /**
    * Get the root node (Shadow DOM or document)
@@ -127,7 +126,7 @@ export class ChipAway extends O {
 
   /**
    * Render all chips for a given select element
-   * @param {ChipAway} self
+   * @param {AllProps & HTMLElement} self
    * @param {string} id
    * @param {HTMLSelectElement} select
    */
@@ -148,11 +147,19 @@ export class ChipAway extends O {
   }
 
   /**
+   * @type {AbortController | undefined}
+   */
+  #ac;
+
+  /**
    * Main render action - called when 'for' property changes
-   * @param {ChipAway} self
+   * @param {AllProps & HTMLElement} self
    * @returns {PAP}
    */
   render(self) {
+    if (this.#ac) this.#ac.abort();
+    this.#ac = new AbortController();
+    const { signal } = this.#ac;  
     const { for: forAttr } = self;
     if (!forAttr) return {};
 
@@ -169,7 +176,7 @@ export class ChipAway extends O {
 
       // Attach change listener
       const listener = () => this.render(self);
-      select.addEventListener('change', listener);
+      select.addEventListener('change', listener, { signal });
 
       // Render chips
       this.#renderSelectChips(self, id, select);
@@ -178,5 +185,6 @@ export class ChipAway extends O {
     return {};
   }
 }
+
 
 ChipAway.bootUp();
