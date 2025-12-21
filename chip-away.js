@@ -4,6 +4,9 @@ import {O} from 'trans-render/froop/O.js';
 /** @import {EndUserProps, AllProps, PAP, ProPAP, Actions} from './ts-refs/chip-away/types'; */
 
 
+/**
+ * @implements {EventListenerObject}
+ */
 export class ChipAway extends O {
 
   /** @type {WeakMap<HTMLElement, HTMLElement>} */
@@ -91,11 +94,8 @@ export class ChipAway extends O {
     const button = document.createElement('button');
     button.type = 'button';
     button.innerHTML = '&#10006;';
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      option.selected = false;
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    this.#refs.set(button, option);
+    button.addEventListener('click', this);
 
     const span = document.createElement('span');
     span.textContent = option.textContent;
@@ -179,6 +179,26 @@ export class ChipAway extends O {
     });
 
     return {};
+  }
+
+  /**
+   * 
+   * @param {Event} e 
+   */
+  handleEvent(e){
+    const {type} = e;
+    switch(type){
+      case 'click':
+        e.preventDefault();
+        const option = /** @type {HTMLOptionElement | undefined} */ (this.#refs.get(e.target));
+        if(option === undefined) throw 500;
+        option.selected = false;
+        const select = option.closest('select');
+        if(select === null) throw 500;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+
+        break;
+    }
   }
 }
 
