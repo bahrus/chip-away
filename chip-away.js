@@ -9,8 +9,8 @@ import {O} from 'trans-render/froop/O.js';
  */
 export class ChipAway extends O {
 
-  /** @type {WeakMap<HTMLElement, HTMLElement>} */
-  #refs = new WeakMap();
+  /** @type {WeakMap<HTMLElement, HTMLOptionElement>} */
+  #chipRefs = new WeakMap();
   /** @type {OConfig<AllProps, Actions>} */ 
   static config = {
     propInfo: {
@@ -94,7 +94,7 @@ export class ChipAway extends O {
     const button = document.createElement('button');
     button.type = 'button';
     button.innerHTML = '&#10006;';
-    this.#refs.set(button, option);
+    this.#chipRefs.set(button, option);
     button.addEventListener('click', this);
 
     const span = document.createElement('span');
@@ -186,17 +186,17 @@ export class ChipAway extends O {
    * @param {Event} e 
    */
   handleEvent(e){
-    const {type} = e;
+    const {type, target} = e;
+    if(!(target instanceof HTMLElement)) throw 500;
     switch(type){
       case 'click':
-        e.preventDefault();
-        const option = /** @type {HTMLOptionElement | undefined} */ (this.#refs.get(e.target));
+        e.stopPropagation();
+        const option =  this.#chipRefs.get(target);
         if(option === undefined) throw 500;
         option.selected = false;
         const select = option.closest('select');
         if(select === null) throw 500;
         select.dispatchEvent(new Event('change', { bubbles: true }));
-
         break;
     }
   }
