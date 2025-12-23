@@ -89,7 +89,8 @@ export class ChipAway extends O {
    * @param {HTMLOptionElement} option
    * @returns {HTMLElement}
    */
-  #createChipElement(self, id, select, option) {
+  #createChipElement(self, select, option) {
+    
     const label = document.createElement('label');
     const button = document.createElement('button');
     button.type = 'button';
@@ -99,13 +100,8 @@ export class ChipAway extends O {
 
     const span = document.createElement('span');
     span.textContent = option.textContent;
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.value = id;
     
     label.appendChild(span);
-    label.appendChild(input);
     label.appendChild(button);
     
     return label;
@@ -118,7 +114,7 @@ export class ChipAway extends O {
    * @param {HTMLSelectElement} select
    * @returns {HTMLFieldSetElement}
    */
-  #createChipsContainer(self, id, select) {
+  #createChipsContainer(self, select) {
     const fieldset = document.createElement('fieldset');
     const legend = document.createElement('legend');
     
@@ -131,19 +127,18 @@ export class ChipAway extends O {
   /**
    * Render all chips for a given select element
    * @param {ChipAway} self
-   * @param {string} id
    * @param {HTMLSelectElement} select
    */
-  #renderSelectChips(self, id, select) {
+  #renderSelectChips(self, select) {
     const selectedOptions = Array.from(select.selectedOptions)
       .filter(option => option.value !== '');
     
     if (selectedOptions.length === 0) return;
 
-    const container = this.#createChipsContainer(self, id, select);
+    const container = this.#createChipsContainer(self, select);
 
     for (const option of selectedOptions) {
-      const chip = this.#createChipElement(self, id, select, option);
+      const chip = this.#createChipElement(self, select, option);
       container.appendChild(chip);
     }
 
@@ -175,7 +170,7 @@ export class ChipAway extends O {
       select.addEventListener('change', listener);
 
       // Render chips
-      this.#renderSelectChips(self, id, select);
+      this.#renderSelectChips(self, select);
     });
 
     return {};
