@@ -91,6 +91,10 @@ export class ChipAway extends O {
     const button = document.createElement('button');
     button.type = 'button';
     button.innerHTML = '&#10006;';
+    button.style.padding = '8px 12px';
+    button.style.minWidth = '32px';
+    button.style.minHeight = '32px';
+    button.style.cursor = 'pointer';
     this.#chipToOptionRefs.set(button, option);
     button.addEventListener('click', this);
 
@@ -123,6 +127,11 @@ export class ChipAway extends O {
     const clearButton = document.createElement('button');
     clearButton.type = 'button';
     clearButton.textContent = 'Clear All';
+    clearButton.style.padding = '8px 12px';
+    clearButton.style.minWidth = '44px';
+    clearButton.style.minHeight = '44px';
+    clearButton.style.cursor = 'pointer';
+    clearButton.style.marginLeft = '8px';
     clearButton.setAttribute('data-clear-select-id', id);
     clearButton.addEventListener('click', this);
     legend.appendChild(clearButton);

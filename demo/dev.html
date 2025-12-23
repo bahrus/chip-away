@@ -9,28 +9,40 @@
 </head>
 
 <body>
-    <label>
-        <span>Select 1</span>
-        <select id="select1" multiple>
-            <option value="">-- Please choose an option --</option>
-            <option selected value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-        </select>
-    </label>
+    <style>
+        div{
+            margin: 10px;
+        }
+    </style>
+    <div>
+        <label>
+            <span>Select 1</span>
+            <select id="select1" multiple>
+                <option value="">-- Please choose an option --</option>
+                <option selected value="option1">Option 1</option>
+                <option value="option2">Option 2</option>
+            </select>
+        </label>
+    </div>
 
-    <label>
-        <span>Select 2</span>
-        <select id="select2">
-            <option value="">-- Please choose an option --</option>
-            <option value="option3">Option 3</option>
-            <option value="option4">Option 4</option>
-        </select>
-    </label>
+    <div>
+        <label>
+            <span>Select 2</span>
+            <select id="select2">
+                <option value="">-- Please choose an option --</option>
+                <option value="option3">Option 3</option>
+                <option value="option4">Option 4</option>
+            </select>
+        </label>
+    </div>
 
-    <chip-away for="select1 select2"></chip-away>
+    <div>
+        <chip-away for="select1 select2"></chip-away>
+    </div>
+    
 
     <script type="module" src="../index.js"></script>
-    
+
 
 </body>
 
