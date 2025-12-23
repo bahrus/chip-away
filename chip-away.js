@@ -168,9 +168,9 @@ export class ChipAway extends O {
     const { for: forAttr } = self;
     if (!forAttr) return {};
 
-    // Clear existing fieldsets
-    const existingFieldsets = self.querySelectorAll(':scope > fieldset');
-    existingFieldsets.forEach(fs => fs.remove());
+    // Clear existing fieldsets using the map
+    this.#selectIDToChipsContainerMap.forEach(fieldset => fieldset.remove());
+    this.#selectIDToChipsContainerMap.clear();
 
     // Attach listeners and render chips for each select
     const selectIds = forAttr.split(/\s+/).filter(Boolean);
