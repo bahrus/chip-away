@@ -150,6 +150,10 @@ export class ChipAway extends O {
     }
 
     const container = this.#createChipsContainer(self, select);
+    
+    // Clear existing chips (but keep the legend)
+    const existingChips = container.querySelectorAll('label');
+    existingChips.forEach(chip => chip.remove());
 
     for (const option of selectedOptions) {
       const chip = this.#createChipElement(self, select, option);
