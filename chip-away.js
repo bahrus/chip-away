@@ -120,6 +120,13 @@ export class ChipAway extends O {
     legend.textContent = this.getLegendText(self, select);
     fieldset.appendChild(legend);
     
+    const clearButton = document.createElement('button');
+    clearButton.type = 'button';
+    clearButton.textContent = 'Clear All';
+    clearButton.setAttribute('data-clear-select-id', id);
+    clearButton.addEventListener('click', this);
+    legend.appendChild(clearButton);
+    
     return fieldset;
   }
 
@@ -194,12 +201,24 @@ export class ChipAway extends O {
     switch(type){
       case 'click':
         e.stopPropagation();
-        const option =  this.#chipToOptionRefs.get(target);
-        if(option === undefined) throw 500;
-        option.selected = false;
-        const select = option.closest('select');
-        if(select === null) throw 500;
-        select.dispatchEvent(new Event('change', { bubbles: true }));
+        const clearSelectId = target.getAttribute('data-clear-select-id');
+        if(clearSelectId) {
+          // Handle clear all button
+          const root = this.#getRoot(self);
+          const select = /** @type {HTMLSelectElement} */ (root instanceof ShadowRoot ? root.getElementById(clearSelectId) : document.getElementById(clearSelectId));
+          if(select) {
+            Array.from(select.options).forEach(option => option.selected = false);
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        } else {
+          // Handle chip delete button
+          const option =  this.#chipToOptionRefs.get(target);
+          if(option === undefined) throw 500;
+          option.selected = false;
+          const select = option.closest('select');
+          if(select === null) throw 500;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
         break;
       case 'change':
         if(!(target instanceof HTMLSelectElement)) throw 500;
