@@ -88,14 +88,11 @@ export class ChipAway extends O {
   createChipElement(self, select, option) {
     
     const label = document.createElement('label');
-    //label.classList.add('chip-remove-option-container');
     label.part.add('chip-remove-option-container');
     const button = document.createElement('button');
     button.type = 'button';
-    //button.classList.add('chip-remove-option-trigger');
     button.part.add('chip-remove-option-trigger');
     button.ariaLabel = 'Remove';
-    button.innerHTML = '&#10006;';
     this.#chipToOptionRefs.set(button, option);
     button.addEventListener('click', this);
 
