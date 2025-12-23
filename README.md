@@ -7,8 +7,9 @@
 - **Automatic Chip Generation**: Converts selected options into visual chips
 - **Easy Deselection**: Click the × button on any chip to remove it instantly
 - **Multi-Select Support**: Monitor multiple select elements simultaneously
-- **Light DOM Children**: Renders chips as semantic HTML (fieldsets, labels, buttons)
-- **Flexible Naming**: Use the canonical name "chip-away" or customize it
+- **Light DOM Rendering**: Renders chips as semantic HTML (fieldsets, legends, labels, buttons)
+- **Smart Legend Text**: Automatically derives legend text from associated labels or select element ID
+- **Shadow DOM Compatible**: Works correctly within Shadow DOM boundaries
 
 ## Installation
 
@@ -54,15 +55,13 @@ The `chip-away` component monitors the select elements referenced in the `for` a
 ```html
 <chip-away for="select1 select2">
     <fieldset>
-        <legend>Select 1</legend>
+        <legend>Email</legend>
         <label>
             <span>Option 1</span>
-            <input type="hidden" value="select1">
             <button>&#10006;</button>
         </label>
         <label>
             <span>Option 2</span>
-            <input type="hidden" value="select1">
             <button>&#10006;</button>
         </label>
     </fieldset>
@@ -70,15 +69,24 @@ The `chip-away` component monitors the select elements referenced in the `for` a
 ```
 
 Each selected option appears as a chip with:
+- A **span** displaying the option text
 - An **× button** to remove the option from the select element
-- A **label** displaying the option text
-- A **hidden input** storing the select element's ID
 
 Clicking the × button automatically deselects the option and updates the chip display in real-time.
 
+### Legend Text Resolution
+
+The component intelligently determines the legend text for each select element using the following priority:
+
+1. **If the select is inside a `<label>` element**: Uses the label's text content (minus the select's own text)
+2. **If the select has an `id` and a `<label for="...">` exists**: Uses the label's text content
+3. **Fallback**: Uses the select element's `id`
+
 ## Custom Naming
 
-The component name is flexible. By default, importing `index.js` registers the component as `<chip-away>`. To use a custom name, import `chip-away.js` directly and register it yourself:
+The component is distributed as a class and automatically boots up when the module is imported. The canonical name is `<chip-away>`, registered by default.
+
+To use a custom element name, import the class and register it yourself:
 
 ```javascript
 import { ChipAway } from 'chip-away/chip-away.js';
@@ -100,46 +108,34 @@ This is especially helpful when managing multiple select elements across your HT
 
 ## Extending with Custom Markup
 
-The component is designed to be subclassed for custom rendering. Override the methods render, createChipContainer and createChip method to define your own HTML structure.
+The component is designed to be subclassed for custom rendering. The implementation uses the `trans-render/froop` pattern, and exposes the following methods:
 
+### Methods You Can Override
 
-### Overridable Methods
-
-The `ChipAway` component provides three methods that can be overridden to customize behavior and rendering:
-
-#### `render()`
-Called when the component connects or when a select element changes. This method clears existing chips and orchestrates the overall rendering flow by iterating through all selected options.
-
-**Override this to:**
-- Customize the overall rendering flow
-- Add custom logic before or after chips are rendered
-- Control how multiple select elements are processed
-
-#### `createChipsContainer(id, select, selectedOptions)`
-Creates the container element (fieldset) that holds all chips for a specific select element.
+#### `#getLegendText(self, select)`
+Determines the legend text displayed in the fieldset for a given select element.
 
 **Parameters:**
-- `id` - The ID of the select element
+- `self` - The component instance
 - `select` - The HTMLSelectElement reference
-- `selectedOptions` - Array of selected HTMLOptionElement objects
 
 **Returns:**
-- An HTMLElement to serve as the container for chips
+- A string to use as the legend text
 
 **Override this to:**
-- Change the container structure (e.g., use a `<div>` instead of `<fieldset>`)
-- Customize the legend/title element
-- Add additional metadata or styling to the container
+- Customize how legend text is determined
+- Add prefixes, suffixes, or special formatting
 
-#### `createChip(id, select, selectedOptions, option, container)`
+#### `#createChipElement(self, select, option)`
 Creates the HTML markup for a single chip representing one selected option.
 
 **Parameters:**
-- `id` - The ID of the select element
+- `self` - The component instance
 - `select` - The HTMLSelectElement reference
-- `selectedOptions` - Array of selected option elements
 - `option` - The current HTMLOptionElement being rendered
-- `container` - The parent container element to append the chip to
+
+**Returns:**
+- An HTMLElement (typically a `<label>`) to serve as the chip
 
 **Override this to:**
 - Customize individual chip HTML structure
@@ -147,18 +143,39 @@ Creates the HTML markup for a single chip representing one selected option.
 - Modify button behavior or labels
 - Add additional elements or data attributes
 
-#### `createChips(id, select, selectedOptions)`
-Orchestrates the creation of all chips for a specific select element. Calls `createChipsContainer()` and then `createChip()` for each selected option.
+#### `#createChipsContainer(self, select)`
+Creates the container element (fieldset) that holds all chips for a specific select element.
 
 **Parameters:**
-- `id` - The ID of the select element
+- `self` - The component instance
 - `select` - The HTMLSelectElement reference
-- `selectedOptions` - Array of selected option elements
+
+**Returns:**
+- An HTMLFieldSetElement to serve as the container
 
 **Override this to:**
-- Customize how the container and chips are created together
-- Add custom processing or filtering of options
-- Control the order or grouping of chips
+- Change the container structure (e.g., use a `<div>` instead of `<fieldset>`)
+- Customize the legend creation
+- Add additional metadata or styling to the container
+
+#### `#renderSelectChips(self, select)`
+Orchestrates the rendering of all chips for a specific select element.
+
+**Parameters:**
+- `self` - The component instance
+- `select` - The HTMLSelectElement reference
+
+**Override this to:**
+- Customize the overall rendering flow for a single select
+- Add custom logic before or after chips are rendered
+
+#### `hydrate(self)`
+Main entry point called when the component's `for` attribute changes or is initially set.
+
+**Override this to:**
+- Customize the overall rendering flow
+- Add custom logic before or after all chips are rendered
+- Control how multiple select elements are processed
 
 ## License
 

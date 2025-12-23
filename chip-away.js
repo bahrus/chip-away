@@ -22,18 +22,11 @@ export class ChipAway extends O {
         type: 'String',
         attrName: 'for',
         parse: true,
+        reflect: true,
       },
     },
     compacts: {
       when_for_changes_call_hydrate: 0,
-    },
-    // actions: {
-    //   render: {
-    //     ifKeyIn: ['for'],
-    //   },
-    // },
-    handlers: {
-      // Listen for change events on monitored select elements
     },
 
   };
