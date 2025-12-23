@@ -36,7 +36,7 @@ export class ChipAway extends O {
 
   /**
    * Get the root node (Shadow DOM or document)
-   * @param {ChipAway} self
+   * @param {HTMLElement} self
    * @returns {ShadowRoot | Document}
    */
   #getRoot(self) {
@@ -46,7 +46,7 @@ export class ChipAway extends O {
 
   /**
    * Find an element by ID in the appropriate root
-   * @param {ChipAway} self
+   * @param {AllProps & HTMLElement} self
    * @param {string} id
    * @returns {HTMLElement | null}
    */
@@ -60,7 +60,7 @@ export class ChipAway extends O {
 
   /**
    * Get legend text for a select element
-   * @param {ChipAway} self
+   * @param {AllProps & HTMLElement} self
    * @param {HTMLSelectElement} select
    * @returns {string}
    */
@@ -83,7 +83,7 @@ export class ChipAway extends O {
 
   /**
    * Create a single chip element
-   * @param {ChipAway} self
+   * @param {AllProps & HTMLElement} self
    * @param {HTMLSelectElement} select
    * @param {HTMLOptionElement} option
    * @returns {HTMLElement}
@@ -108,8 +108,7 @@ export class ChipAway extends O {
 
   /**
    * Create the container fieldset for chips
-   * @param {ChipAway} self
-   * @param {string} id
+   * @param {AllProps & HTMLElement} self
    * @param {HTMLSelectElement} select
    * @returns {HTMLFieldSetElement}
    */
@@ -125,7 +124,7 @@ export class ChipAway extends O {
 
   /**
    * Render all chips for a given select element
-   * @param {ChipAway} self
+   * @param {AllProps & HTMLElement} self
    * @param {HTMLSelectElement} select
    */
   #renderSelectChips(self, select) {
@@ -146,7 +145,7 @@ export class ChipAway extends O {
 
   /**
    * Main render action - called when 'for' property changes
-   * @param {ChipAway} self
+   * @param {AllProps & HTMLElement} self
    * @returns {PAP}
    */
   hydrate(self) {
