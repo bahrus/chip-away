@@ -10,7 +10,11 @@ import {O} from 'trans-render/froop/O.js';
 export class ChipAway extends O {
 
   /** @type {WeakMap<HTMLElement, HTMLOptionElement>} */
-  #chipRefs = new WeakMap();
+  #chipToOptionRefs = new WeakMap();
+
+  /** @type {Map<string, HTMLFieldSetElement>} */
+  #selectIDToChipsContainerMap = new Map();
+
   /** @type {OConfig<AllProps, Actions>} */ 
   static config = {
     propInfo: {
@@ -94,7 +98,7 @@ export class ChipAway extends O {
     const button = document.createElement('button');
     button.type = 'button';
     button.innerHTML = '&#10006;';
-    this.#chipRefs.set(button, option);
+    this.#chipToOptionRefs.set(button, option);
     button.addEventListener('click', this);
 
     const span = document.createElement('span');
@@ -113,7 +117,11 @@ export class ChipAway extends O {
    * @returns {HTMLFieldSetElement}
    */
   #createChipsContainer(self, select) {
-    const fieldset = document.createElement('fieldset');
+    const { id } = select;
+    let fieldset = this.#selectIDToChipsContainerMap.get(id);
+    if (fieldset) return fieldset;
+    fieldset = document.createElement('fieldset');
+    this.#selectIDToChipsContainerMap.set(id, fieldset);
     const legend = document.createElement('legend');
     
     legend.textContent = this.#getLegendText(self, select);
@@ -131,7 +139,15 @@ export class ChipAway extends O {
     const selectedOptions = Array.from(select.selectedOptions)
       .filter(option => option.value !== '');
     
-    if (selectedOptions.length === 0) return;
+    if (selectedOptions.length === 0) {
+      const {id} = select;
+      const existingContainer = this.#selectIDToChipsContainerMap.get(id);
+      if(existingContainer){
+        existingContainer.remove();
+        this.#selectIDToChipsContainerMap.delete(id);
+      }
+      return;
+    }
 
     const container = this.#createChipsContainer(self, select);
 
@@ -163,9 +179,7 @@ export class ChipAway extends O {
       const select = /** @type {HTMLSelectElement} */ (this.#findElement(self, id));
       if (!select) return;
 
-      // Attach change listener
-      const listener = () => this.hydrate(self);
-      select.addEventListener('change', listener);
+      select.addEventListener('change', this);
 
       // Render chips
       this.#renderSelectChips(self, select);
@@ -180,16 +194,21 @@ export class ChipAway extends O {
    */
   handleEvent(e){
     const {type, target} = e;
+    const self = /** @type {AllProps & HTMLElement} */ (/** @type {any} */(this));
     if(!(target instanceof HTMLElement)) throw 500;
     switch(type){
       case 'click':
         e.stopPropagation();
-        const option =  this.#chipRefs.get(target);
+        const option =  this.#chipToOptionRefs.get(target);
         if(option === undefined) throw 500;
         option.selected = false;
         const select = option.closest('select');
         if(select === null) throw 500;
         select.dispatchEvent(new Event('change', { bubbles: true }));
+        break;
+      case 'change':
+        if(!(target instanceof HTMLSelectElement)) throw 500;
+        this.#renderSelectChips(self, target);
         break;
     }
   }
