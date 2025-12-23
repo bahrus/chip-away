@@ -61,7 +61,7 @@ export class ChipAway extends O {
    * @param {HTMLSelectElement} select
    * @returns {string}
    */
-  #getLegendText(self, select) {
+  getLegendText(self, select) {
     let legendText = select.id || '';
     
     const parentLabel = select.closest('label');
@@ -85,7 +85,7 @@ export class ChipAway extends O {
    * @param {HTMLOptionElement} option
    * @returns {HTMLElement}
    */
-  #createChipElement(self, select, option) {
+  createChipElement(self, select, option) {
     
     const label = document.createElement('label');
     const button = document.createElement('button');
@@ -109,7 +109,7 @@ export class ChipAway extends O {
    * @param {HTMLSelectElement} select
    * @returns {HTMLFieldSetElement}
    */
-  #createChipsContainer(self, select) {
+  createChipsContainer(self, select) {
     const { id } = select;
     let fieldset = this.#selectIDToChipsContainerMap.get(id);
     if (fieldset) return fieldset;
@@ -117,7 +117,7 @@ export class ChipAway extends O {
     this.#selectIDToChipsContainerMap.set(id, fieldset);
     const legend = document.createElement('legend');
     
-    legend.textContent = this.#getLegendText(self, select);
+    legend.textContent = this.getLegendText(self, select);
     fieldset.appendChild(legend);
     
     return fieldset;
@@ -128,7 +128,7 @@ export class ChipAway extends O {
    * @param {AllProps & HTMLElement} self
    * @param {HTMLSelectElement} select
    */
-  #renderSelectChips(self, select) {
+  renderSelectChips(self, select) {
     const selectedOptions = Array.from(select.selectedOptions)
       .filter(option => option.value !== '');
     
@@ -142,14 +142,14 @@ export class ChipAway extends O {
       return;
     }
 
-    const container = this.#createChipsContainer(self, select);
+    const container = this.createChipsContainer(self, select);
     
     // Clear existing chips (but keep the legend)
     const existingChips = container.querySelectorAll('label');
     existingChips.forEach(chip => chip.remove());
 
     for (const option of selectedOptions) {
-      const chip = this.#createChipElement(self, select, option);
+      const chip = this.createChipElement(self, select, option);
       container.appendChild(chip);
     }
 
@@ -176,7 +176,7 @@ export class ChipAway extends O {
       const select = /** @type {HTMLSelectElement} */ (this.#findElement(self, id));
       if(!select) continue;
       select.addEventListener('change', this);
-      this.#renderSelectChips(self, select);
+      this.renderSelectChips(self, select);
     }
     
 
@@ -203,7 +203,7 @@ export class ChipAway extends O {
         break;
       case 'change':
         if(!(target instanceof HTMLSelectElement)) throw 500;
-        this.#renderSelectChips(self, target);
+        this.renderSelectChips(self, target);
         break;
     }
   }
