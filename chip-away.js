@@ -84,7 +84,6 @@ export class ChipAway extends O {
   /**
    * Create a single chip element
    * @param {ChipAway} self
-   * @param {string} id
    * @param {HTMLSelectElement} select
    * @param {HTMLOptionElement} option
    * @returns {HTMLElement}
