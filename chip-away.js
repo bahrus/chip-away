@@ -174,16 +174,14 @@ export class ChipAway extends O {
 
     // Attach listeners and render chips for each select
     const selectIds = forAttr.split(/\s+/).filter(Boolean);
-    
-    selectIds.forEach(id => {
+
+    for(const id of selectIds){
       const select = /** @type {HTMLSelectElement} */ (this.#findElement(self, id));
-      if (!select) return;
-
+      if(!select) continue;
       select.addEventListener('change', this);
-
-      // Render chips
       this.#renderSelectChips(self, select);
-    });
+    }
+    
 
     return {};
   }
