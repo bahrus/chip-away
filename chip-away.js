@@ -87,8 +87,9 @@ export class ChipAway extends O {
    */
   createChipElement(self, select, option) {
     
-    const label = document.createElement('label');
-    label.part.add('chip-remove-option-container');
+    const chip = document.createElement('div');
+    chip.classList.add('chip');
+    chip.part.add('chip-remove-option-container');
     const button = document.createElement('button');
     button.type = 'button';
     button.part.add('chip-remove-option-trigger');
@@ -99,10 +100,10 @@ export class ChipAway extends O {
     const span = document.createElement('span');
     span.textContent = option.textContent;
     
-    label.appendChild(span);
-    label.appendChild(button);
+    chip.appendChild(span);
+    chip.appendChild(button);
     
-    return label;
+    return chip;
   }
 
   /**
@@ -159,7 +160,7 @@ export class ChipAway extends O {
     const container = this.createChipsContainer(self, select);
     
     // Clear existing chips (but keep the legend)
-    const existingChips = container.querySelectorAll('label');
+    const existingChips = container.querySelectorAll('.chip');
     existingChips.forEach(chip => chip.remove());
 
     for (const option of selectedOptions) {
