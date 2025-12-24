@@ -3,7 +3,7 @@
     align-items: center;
     background-color: #e0e0e0;
     border-radius: 16px;
-    padding: 6px 12px;
+    padding: 3px 12px;
     margin: 4px;
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
@@ -26,7 +26,7 @@
     font-size: 16px;
     width: 18px;
     height: 18px;
-    margin-right: 6px;
+    margin-right: 1px;
     padding: 8px 12px;
     cursor: pointer;
     border-radius: 50%;
@@ -51,4 +51,26 @@
 .chip span {
     line-height: 1;
     color: #212121;
+}
+
+.clear-all-trigger {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 11px;
+    padding: 2px 4px;
+    min-width: auto;
+    min-height: auto;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    opacity: 0.6;
+}
+
+.clear-all-trigger:hover {
+    color: #666;
+    opacity: 1;
+}
+
+.clear-all-trigger::before {
+    content: '✕';
 }

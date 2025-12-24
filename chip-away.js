@@ -125,7 +125,7 @@ export class ChipAway extends O {
     
     const clearButton = document.createElement('button');
     clearButton.type = 'button';
-    clearButton.textContent = 'Clear All';
+    clearButton.classList.add('clear-all-trigger');
     clearButton.style.padding = '8px 12px';
     clearButton.style.minWidth = '44px';
     clearButton.style.minHeight = '44px';
