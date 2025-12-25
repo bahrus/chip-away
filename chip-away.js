@@ -15,6 +15,9 @@ export class ChipAway extends O {
   /** @type {Map<string, HTMLFieldSetElement>} */
   #selectIDToChipsContainerMap = new Map();
 
+  /** @type {WeakMap<HTMLButtonElement, string>} */
+  #clearButtonToSelectIDMap = new WeakMap();
+
   /** @type {OConfig<AllProps, Actions>} */ 
   static config = {
     propInfo: {
@@ -126,7 +129,7 @@ export class ChipAway extends O {
     const clearButton = document.createElement('button');
     clearButton.type = 'button';
     clearButton.classList.add('clear-all-trigger');
-    clearButton.setAttribute('data-clear-select-id', id);
+    this.#clearButtonToSelectIDMap.set(clearButton, id);
     clearButton.addEventListener('click', this);
     legend.appendChild(clearButton);
     
@@ -203,8 +206,9 @@ export class ChipAway extends O {
     if(!(target instanceof HTMLElement)) throw 500;
     switch(type){
       case 'click':
+        if(!(target instanceof HTMLButtonElement)) throw 500;
         e.stopPropagation();
-        const clearSelectId = target.getAttribute('data-clear-select-id');
+        const clearSelectId = this.#clearButtonToSelectIDMap.get(target);
         if(clearSelectId) {
           // Handle clear all button
           const root = this.#getRoot(self);
