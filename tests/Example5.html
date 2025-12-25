@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chip Away - Multiple Selects</title>
+    <!--#include virtual="/imports.html" -->
+    <link rel="stylesheet" href="../default.css">
+</head>
+<body>
+    <label>
+        <span>Select 1:</span>
+        <select id="select1" multiple>
+            <option selected value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+        </select>
+    </label>
+
+    <label>
+        <span>Select 2:</span>
+        <select id="select2" multiple>
+            <option selected value="optionA">Option A</option>
+            <option value="optionB">Option B</option>
+        </select>
+    </label>
+
+    <chip-away for="select1 select2"></chip-away>
+
+    <script type="module">
+        import '../index.js';
+        
+        function runTest(){
+            // Check that chips are rendered for both selects
+            const chips = document.querySelectorAll('.chip');
+            const fieldsets = document.querySelectorAll('fieldset');
+            if(chips.length === 2 && fieldsets.length === 2){
+                document.getElementById('target').setAttribute('mark', 'good');
+            } else {
+                document.getElementById('target').setAttribute('mark', 'bad');
+            }
+        }
+
+        setTimeout(() => {
+            runTest();
+        }, 1000);
+    </script>
+
+    <div id="target"></div>
+</body>
+</html>

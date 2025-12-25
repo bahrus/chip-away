@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chip Away - Basic Example</title>
+    <!--#include virtual="/imports.html" -->
+    <link rel="stylesheet" href="../default.css">
+</head>
+<body>
+    <label>
+        <span>Select Options:</span>
+        <select id="select1" multiple>
+            <option selected value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+            <option value="option3">Option 3</option>
+        </select>
+    </label>
+
+    <chip-away for="select1"></chip-away>
+
+    <script type="module">
+        import '../index.js';
+        
+        function runTest(){
+            // Check that chips are rendered for selected options
+            const chips = document.querySelectorAll('.chip');
+            if(chips.length === 1){
+                document.getElementById('target').setAttribute('mark', 'good');
+            } else {
+                document.getElementById('target').setAttribute('mark', 'bad');
+            }
+        }
+
+        setTimeout(() => {
+            runTest();
+        }, 100);
+    </script>
+
+    <div id="target"></div>
+</body>
+</html>

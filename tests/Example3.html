@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chip Away - Remove Chip</title>
+    <!--#include virtual="/imports.html" -->
+    <link rel="stylesheet" href="../default.css">
+</head>
+<body>
+    <label>
+        <span>Select Options:</span>
+        <select id="select1" multiple>
+            <option selected value="option1">Option 1</option>
+            <option selected value="option2">Option 2</option>
+            <option value="option3">Option 3</option>
+        </select>
+    </label>
+
+    <chip-away for="select1"></chip-away>
+
+    <button id="removeBtn">Click to remove option 1</button>
+
+    <script type="module">
+        import '../index.js';
+        
+        function runTest(){
+            // Initial check: 2 chips
+            let chips = document.querySelectorAll('.chip');
+            if(chips.length !== 2){
+                document.getElementById('target').setAttribute('mark', 'bad');
+                return;
+            }
+
+            // Click the first chip's remove button
+            const firstChipButton = chips[0].querySelector('button');
+            firstChipButton.click();
+
+            setTimeout(() => {
+                // After removal: 1 chip should remain
+                chips = document.querySelectorAll('.chip');
+                if(chips.length === 1){
+                    document.getElementById('target').setAttribute('mark', 'good');
+                } else {
+                    document.getElementById('target').setAttribute('mark', 'bad');
+                }
+            }, 500);
+        }
+
+        setTimeout(() => {
+            runTest();
+        }, 1000);
+    </script>
+
+    <div id="target"></div>
+</body>
+</html>
