@@ -1,5 +1,10 @@
 # chip-away
 
+[![Playwright Tests](https://github.com/bahrus/chip-away/actions/workflows/CI.yml/badge.svg?branch=baseline)](https://github.com/bahrus/chip-away/actions/workflows/CI.yml)
+[![NPM version](https://badge.fury.io/js/chip-away.png)](http://badge.fury.io/js/chip-away)
+[![How big is this package in your project?](https://img.shields.io/bundlephobia/minzip/chip-away?style=for-the-badge)](https://bundlephobia.com/result?p=chip-away)
+<img src="http://img.badgesize.io/https://cdn.jsdelivr.net/npm/chip-away?compression=gzip">
+
 *chip-away* is a web component that transforms selected options from HTML `<select>` elements into an interactive, visually-distinct chip interface. It provides users with an intuitive way to review, manage, and remove selected values through a clean, user-friendly UI.
 
 ## Features
