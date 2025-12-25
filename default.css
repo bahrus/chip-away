@@ -58,10 +58,11 @@
     border: none;
     color: #999;
     font-size: 11px;
-    padding: 2px 4px;
-    min-width: auto;
-    min-height: auto;
+    padding: 8px 12px;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
+    margin-left: 8px;
     transition: color 0.2s ease;
     opacity: 0.6;
 }

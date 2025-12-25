@@ -126,11 +126,6 @@ export class ChipAway extends O {
     const clearButton = document.createElement('button');
     clearButton.type = 'button';
     clearButton.classList.add('clear-all-trigger');
-    clearButton.style.padding = '8px 12px';
-    clearButton.style.minWidth = '44px';
-    clearButton.style.minHeight = '44px';
-    clearButton.style.cursor = 'pointer';
-    clearButton.style.marginLeft = '8px';
     clearButton.setAttribute('data-clear-select-id', id);
     clearButton.addEventListener('click', this);
     legend.appendChild(clearButton);
