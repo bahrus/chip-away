@@ -60,15 +60,18 @@ The `chip-away` component monitors the select elements referenced in the `for` a
 ```html
 <chip-away for="select1 select2">
     <fieldset>
-        <legend>Email</legend>
-        <label>
+        <legend>
+            Select 1
+            <button class="clear-all-trigger" data-clear-select-id="select1"></button>
+        </legend>
+        <div class="chip">
             <span>Option 1</span>
-            <button>&#10006;</button>
-        </label>
-        <label>
+            <button type="button">✕</button>
+        </div>
+        <div class="chip">
             <span>Option 2</span>
-            <button>&#10006;</button>
-        </label>
+            <button type="button">✕</button>
+        </div>
     </fieldset>
 </chip-away>
 ```
@@ -76,8 +79,9 @@ The `chip-away` component monitors the select elements referenced in the `for` a
 Each selected option appears as a chip with:
 - A **span** displaying the option text
 - An **× button** to remove the option from the select element
+- Each fieldset includes a "Clear All" button in the legend to deselect all options at once
 
-Clicking the × button automatically deselects the option and updates the chip display in real-time.
+Clicking the × button on a chip automatically deselects that option and updates the chip display in real-time. Clicking the "Clear All" button removes all chips for that select element.
 
 ### Legend Text Resolution
 
