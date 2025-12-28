@@ -22,8 +22,8 @@
   },
   "devDependencies": {
     "@playwright/test": "1.57.0",
-    "be-valued": "0.0.8",
-    "spa-ssi": "0.0.25"
+    "be-valued": "0.0.9",
+    "spa-ssi": "0.0.26"
   },
   "dependencies": {
     "trans-render": "0.0.961"
