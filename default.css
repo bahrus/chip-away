@@ -9,48 +9,48 @@
     font-size: 14px;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
     user-select: none;
-}
 
-.chip:hover {
-    background-color: #d5d5d5;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+    &:hover {
+        background-color: #d5d5d5;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
 
-.chip button {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: #616161;
-    font-size: 16px;
-    width: 18px;
-    height: 18px;
-    margin-right: 1px;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 50%;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    min-width: 32px;
-    min-height: 32px;
-}
+    & button {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: #616161;
+        font-size: 16px;
+        width: 18px;
+        height: 18px;
+        margin-right: 1px;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        min-width: 32px;
+        min-height: 32px;
 
-.chip button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    color: #424242;
-}
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #424242;
+        }
 
-.chip button:active {
-    background-color: rgba(0, 0, 0, 0.2);
-}
+        &:active {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
 
-.chip button::before {
-    content: '✕';
-}
+        &::before {
+            content: '✕';
+        }
+    }
 
-.chip span {
-    line-height: 1;
-    color: #212121;
+    & span {
+        line-height: 1;
+        color: #212121;
+    }
 }
 
 .clear-all-trigger {
@@ -65,13 +65,13 @@
     margin-left: 8px;
     transition: color 0.2s ease;
     opacity: 0.6;
-}
 
-.clear-all-trigger:hover {
-    color: #666;
-    opacity: 1;
-}
+    &:hover {
+        color: #666;
+        opacity: 1;
+    }
 
-.clear-all-trigger::before {
-    content: '✕';
+    &::before {
+        content: '✕';
+    }
 }
