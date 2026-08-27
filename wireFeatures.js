@@ -17,19 +17,19 @@ export async function wireFeatures(ElementClass, cfg) {
             spawn: ChipAwayFeature,
             callbackForwarding: ['connectedCallback', 'disconnectedCallback', 'attributeChangedCallback']
         },
-        truthSourcer: {
-            customData: truthSourcerConfig.customData,
-            callbackForwarding: ['connectedCallback', 'attributeChangedCallback']
-        },
-        faceUp: {
-            callbackForwarding: [
-                'connectedCallback',
-                'disconnectedCallback',
-                'formDisabledCallback',
-                'formResetCallback',
-                'formStateRestoreCallback'
-            ]
-        },
+        // truthSourcer: {
+        //     customData: truthSourcerConfig.customData,
+        //     callbackForwarding: ['connectedCallback', 'attributeChangedCallback']
+        // },
+        // faceUp: {
+        //     callbackForwarding: [
+        //         'connectedCallback',
+        //         'disconnectedCallback',
+        //         'formDisabledCallback',
+        //         'formResetCallback',
+        //         'formStateRestoreCallback'
+        //     ]
+        // },
         roundabout: {
             customData: roundaboutConfig.customData,
             withAttrs: roundaboutConfig.withAttrs,
