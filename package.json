@@ -27,7 +27,7 @@
     "spa-ssi": "0.0.27"
   },
   "dependencies": {
-    "assign-gingerly": "0.0.48",
-    "el-maker": "0.0.0"
+    "assign-gingerly": "0.0.87",
+    "el-maker": "0.0.22"
   }
 }

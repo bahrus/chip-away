@@ -1,6 +1,6 @@
 // @ts-check
+import 'assign-gingerly/assignFeatures.js';
 import { ChipAwayFeature } from './ChipAwayFeature.js';
-import { resolveAndAssignFeatures } from 'assign-gingerly/resolveAndAssignFeatures.js';
 
 /**
  * Resolves the feature spawns for ChipAwayElement and assigns them with
@@ -12,7 +12,7 @@ export async function wireFeatures(ElementClass, cfg) {
     const truthSourcerConfig = cfg.features?.truthSourcer || {};
     const roundaboutConfig = cfg.features?.roundabout || {};
 
-    await resolveAndAssignFeatures(ElementClass, {
+    await customElements.assignFeatures(ElementClass, {
         chipAway: {
             spawn: ChipAwayFeature,
             callbackForwarding: ['connectedCallback', 'disconnectedCallback', 'attributeChangedCallback']
