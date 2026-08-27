@@ -1,7 +1,7 @@
 {
   "name": "chip-away",
   "version": "0.0.3",
-  "description": "",
+  "description": "Custom element that renders removable chips from selected options of one or more select elements",
   "homepage": "https://github.com/bahrus/chip-away#readme",
   "bugs": {
     "url": "https://github.com/bahrus/chip-away/issues"
@@ -13,19 +13,21 @@
   "license": "MIT",
   "author": "Bruce B. Anderson <anderson.bruce.b@gmail.com>",
   "type": "module",
-  "main": "index.js",
+  "main": "def.js",
   "scripts": {
     "test": "playwright test",
     "serve": "node ./node_modules/spa-ssi/serve.js",
+    "update": "ncu -u && npm install",
     "safari": "npx playwright wk http://localhost:8000",
-    "update": "ncu -u && npm install"
+    "chrome": "npx playwright cr http://localhost:8000",
+    "build": "node defRef.mjs > defRef.json"
   },
   "devDependencies": {
-    "@playwright/test": "1.57.0",
-    "be-valued": "0.0.9",
-    "spa-ssi": "0.0.26"
+    "@playwright/test": "1.60.0",
+    "spa-ssi": "0.0.27"
   },
   "dependencies": {
-    "trans-render": "0.0.961"
+    "assign-gingerly": "0.0.48",
+    "el-maker": "0.0.0"
   }
 }

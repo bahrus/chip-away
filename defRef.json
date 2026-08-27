@@ -1,0 +1,23 @@
+{
+    "features": {
+        "truthSourcer": {
+            "customData": {
+                "observedAttributes": [
+                    "for"
+                ]
+            }
+        },
+        "roundabout": {
+            "customData": {
+                "raConfig": {
+                    "propagate": [
+                        "for"
+                    ]
+                }
+            },
+            "withAttrs": {
+                "for": "for"
+            }
+        }
+    }
+}
