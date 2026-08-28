@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Horizontal Customizable Listbox Demo</title>
+<style>
+  :root {
+    color-scheme: light;
+    --accent: #6c5ce7;
+    --accent-soft: #efeaff;
+    --border: #e2e2e6;
+    --text: #1f1f24;
+    --muted: #6b6b74;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 0 20px;
+    line-height: 1.5;
+  }
+
+  h1 { font-size: 1.3rem; margin-bottom: 4px; }
+  .sub { color: var(--muted); margin-top: 0; margin-bottom: 28px; font-size: 0.92rem; }
+
+  section { margin-bottom: 40px; }
+  h2 { font-size: 1rem; margin-bottom: 6px; }
+  p.note { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+
+  /* ---- Core: opt the select into custom styling ---- */
+  select {
+    appearance: base-select;
+  }
+
+  /* ============================================================
+     DEMO 1 — Segmented-control style horizontal listbox
+     (this is the one that mimics a "chat / cowork" style toggle)
+     ============================================================ */
+  #mode-select {
+    display: flex;
+    width: fit-content;
+    gap: 4px;
+    padding: 4px;
+    background: #f2f2f5;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  #mode-select option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    border-radius: 9px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    outline: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  #mode-select option:hover {
+    background: #e6e6ec;
+  }
+
+  #mode-select option:checked {
+    background: white;
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    font-weight: 600;
+  }
+
+  /* hide the default checkmark entirely — this style communicates
+     selection purely through the pill background, like a segmented
+     control */
+  #mode-select option::checkmark {
+    display: none;
+  }
+
+  /* ============================================================
+     DEMO 2 — MDN's horizontal listbox pattern (scrollable row,
+     visible checkmarks), applied to a tag-picker use case
+     ============================================================ */
+  #tag-select {
+    width: 100%;
+    height: fit-content;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    overflow-x: auto;
+  }
+
+  #tag-select .wrapper {
+    display: flex;
+    width: fit-content;
+  }
+
+  #tag-select option {
+    padding: 10px 24px;
+    position: relative;
+    white-space: nowrap;
+    outline: none;
+    color: var(--text);
+  }
+
+  #tag-select option:nth-of-type(odd) {
+    background: #fafafa;
+  }
+
+  #tag-select option:hover,
+  #tag-select option:focus {
+    background: var(--accent-soft);
+  }
+
+  #tag-select option:checked {
+    font-weight: 600;
+    background: var(--accent-soft);
+  }
+
+  #tag-select option::checkmark {
+    position: absolute;
+    top: -1px;
+    left: 4px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  #output {
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  #output strong { color: var(--text); }
+
+  .fallback-warning {
+    display: none;
+    background: #fff4e5;
+    border: 1px solid #ffd9a0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 28px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Horizontal customizable &lt;select multiple&gt; listbox</h1>
+<p class="sub">Two demos using native HTML, styled with <code>appearance: base-select</code> — no JS framework, no div-soup dropdown.</p>
+
+<div class="fallback-warning" id="warning">
+  Your browser doesn't support <code>appearance: base-select</code> yet, so these will fall back to a plain native multi-select list. This feature currently needs a recent Chromium browser (Chrome/Edge 133+).
+</div>
+
+<section>
+  <h2>Demo 1 — Segmented pill row (like a chat/cowork toggle)</h2>
+  <label for="mode-select">Choose a mode</label>
+  <select id="mode-select" multiple aria-label="Choose a mode">
+    <div class="wrapper" style="display:contents;">
+      <option value="chat" selected>Chat</option>
+      <option value="cowork">Cowork</option>
+      <option value="code">Code</option>
+    </div>
+  </select>
+  <p class="note">This one hides the checkmark and shows selection purely via background — the classic "segmented control" look, allowing multiple selections since it's a <code>multiple</code> select.</p>
+</section>
+
+<section>
+  <h2>Demo 2 — Scrollable horizontal listbox with checkmarks</h2>
+  <label for="tag-select">Select tags</label>
+  <select id="tag-select" multiple aria-label="Select tags">
+    <div class="wrapper">
+      <option value="design">Design</option>
+      <option value="engineering" selected>Engineering</option>
+      <option value="research">Research</option>
+      <option value="marketing">Marketing</option>
+      <option value="sales">Sales</option>
+      <option value="support">Support</option>
+      <option value="legal">Legal</option>
+    </div>
+  </select>
+  <p class="note">This follows MDN's "Horizontal listbox" pattern directly: a flex-laid-out wrapper &lt;div&gt; inside the &lt;select&gt;, with the whole row scrolling horizontally once it overflows.</p>
+  <div id="output">Selected tags: <strong id="tag-output">Engineering</strong></div>
+</section>
+
+<script>
+  // Feature-detect appearance: base-select support
+  if (!CSS.supports("appearance", "base-select")) {
+    document.getElementById("warning").style.display = "block";
+  }
+
+  const tagSelect = document.getElementById("tag-select");
+  const tagOutput = document.getElementById("tag-output");
+  tagSelect.addEventListener("change", () => {
+    const selected = Array.from(tagSelect.selectedOptions).map(o => o.textContent);
+    tagOutput.textContent = selected.length ? selected.join(", ") : "none";
+  });
+</script>
+
+</body>
+</html>

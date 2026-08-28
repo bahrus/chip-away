@@ -16,7 +16,6 @@ const props = {
  * @type {RAConfig<AP, Actions, AP>}
  */
 const raConfig = {
-    //propagate: [props.for],
     compacts:{
         when_splitFor_changes_call_hydrate: 0,
     }

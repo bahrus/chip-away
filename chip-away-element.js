@@ -31,17 +31,6 @@ export class ChipAwayElement extends ElementMaker {
         this.#cleanup();
     }
 
-    /**
-     * @param {string} name
-     * @param {string | null} oldValue
-     * @param {string | null} newValue
-     */
-    attributeChangedCallback(name, oldValue, newValue) {
-        super.attributeChangedCallback?.(name, oldValue, newValue);
-        if (name === 'for' && oldValue !== newValue) {
-            this.#connect();
-        }
-    }
 
     /**
      * Get the root node (Shadow DOM or document) for searching target elements.
@@ -201,7 +190,6 @@ export class ChipAwayElement extends ElementMaker {
         this.#cleanup();
         this.#abortController = new AbortController();
         this.addEventListener('click', this, { signal: this.#abortController.signal });
-        //this.#hydrate();
     }
 
     /**
