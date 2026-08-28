@@ -8,7 +8,8 @@
  * @type {{ [K in keyof AP]: K }}
  */
 const props = {
-    for: 'for'
+    for: 'for',
+    splitFor: 'splitFor'
 };
 
 /**
@@ -22,7 +23,14 @@ const raConfig = {
  * @type {AttrPatterns<AP>}
  */
 const withAttrs = {
-    for: 'for'
+    for: 'for',
+    _for: {
+        mapsTo: props.splitFor,
+        parser: 'splitter',
+        parserOptions: {
+            delimiter: ' '
+        }
+    }
 };
 
 export const cef = {

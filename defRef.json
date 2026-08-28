@@ -16,7 +16,14 @@
                 }
             },
             "withAttrs": {
-                "for": "for"
+                "for": "for",
+                "_for": {
+                    "mapsTo": "splitFor",
+                    "parser": "splitter",
+                    "parserOptions": {
+                        "delimiter": " "
+                    }
+                }
             }
         }
     }
