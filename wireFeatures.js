@@ -29,6 +29,10 @@ export async function wireFeatures(ElementClass, cfg) {
             customData: roundaboutConfig.customData,
             withAttrs: roundaboutConfig.withAttrs,
             callbackForwarding: ['connectedCallback']
+        },
+        idRefs: {
+            customData: { searchFor: ['for'] },
+            callbackForwarding: ['connectedCallback', 'disconnectedCallback']
         }
     });
 }

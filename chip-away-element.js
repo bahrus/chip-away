@@ -6,17 +6,31 @@ import { ElementMaker } from 'el-maker/ElementMaker.js';
 /**
  * Custom element that renders removable chips for selected options of
  * one or more target <select multiple> elements.
+ *
+ * The `for` attribute (space-separated ids) is resolved to live <select>
+ * elements by the reusable `idRefs` feature — including waiting, via a
+ * MutationObserver, for referenced selects that aren't in the DOM yet.
+ * This element only listens for `idRefs`' resolution event and renders.
+ *
  * @extends {ElementMaker<AP, AP>}
  */
 export class ChipAwayElement extends ElementMaker {
+    static supportedFeatures = {
+        ...ElementMaker.supportedFeatures,
+        idRefs: {
+            fallbackSpawn: () => import('./IdRefs.js').then(m => m.IdRefs),
+            callbackForwarding: ['connectedCallback', 'disconnectedCallback'],
+        },
+    };
+
     /** @type {WeakMap<HTMLElement, HTMLOptionElement>} */
     #chipToOptionRefs = new WeakMap();
 
     /** @type {Map<string, HTMLFieldSetElement>} */
     #selectIDToChipsContainerMap = new Map();
 
-    /** @type {WeakMap<HTMLButtonElement, string>} */
-    #clearButtonToSelectIDMap = new WeakMap();
+    /** @type {WeakMap<HTMLButtonElement, HTMLSelectElement>} */
+    #clearButtonToSelectMap = new WeakMap();
 
     /** @type {AbortController | undefined} */
     #abortController;
@@ -31,29 +45,6 @@ export class ChipAwayElement extends ElementMaker {
         this.#cleanup();
     }
 
-
-    /**
-     * Get the root node (Shadow DOM or document) for searching target elements.
-     * @returns {ShadowRoot | Document}
-     */
-    #getRoot() {
-        const root = this.getRootNode();
-        return root instanceof ShadowRoot ? root : document;
-    }
-
-    /**
-     * Find an element by ID in the appropriate root.
-     * @param {string} id
-     * @returns {HTMLElement | null}
-     */
-    #findElement(id) {
-        const root = this.#getRoot();
-        if (root instanceof ShadowRoot) {
-            return root.getElementById(id);
-        }
-        return document.getElementById(id);
-    }
-
     /**
      * Get legend text for a select element.
      * @param {HTMLSelectElement} select
@@ -66,8 +57,8 @@ export class ChipAwayElement extends ElementMaker {
         if (parentLabel) {
             legendText = parentLabel.textContent.replace(select.textContent, '').trim();
         } else if (select.id) {
-            const root = this.#getRoot();
-            const labelWithFor = root.querySelector(`label[for="${select.id}"]`);
+            const root = /** @type {ParentNode} */ (select.getRootNode());
+            const labelWithFor = root.querySelector?.(`label[for="${select.id}"]`);
             if (labelWithFor) {
                 legendText = labelWithFor.textContent;
             }
@@ -122,7 +113,7 @@ export class ChipAwayElement extends ElementMaker {
         clearButton.type = 'button';
         clearButton.classList.add('clear-all-trigger');
         clearButton.ariaLabel = 'Clear all';
-        this.#clearButtonToSelectIDMap.set(clearButton, id);
+        this.#clearButtonToSelectMap.set(clearButton, select);
         legend.appendChild(clearButton);
 
         return fieldset;
@@ -163,23 +154,23 @@ export class ChipAwayElement extends ElementMaker {
     }
 
     /**
-     * Main render action - called when 'for' property/attribute changes.
-     * @param {AP} self
+     * Render (or re-render) chips for every currently-resolved <select>.
+     * Invoked whenever the `idRefs` feature reports a change to the set of
+     * elements referenced by the `for` attribute.
+     * @param {AP} [self]
      */
     hydrate(self) {
+        /** @type {Element[]} */
+        const resolved = this.idRefs?.get?.('for') ?? [];
 
-        const {splitFor} = self;
-        if(!splitFor) return;
-
-                // Clear existing fieldsets using the map
+        // Rebuild all fieldsets from scratch.
         this.#selectIDToChipsContainerMap.forEach(fieldset => fieldset.remove());
         this.#selectIDToChipsContainerMap.clear();
 
-        for (const id of splitFor) {
-            const select = /** @type {HTMLSelectElement | null} */ (this.#findElement(id));
-            if (!select) continue;
-            select.addEventListener('change', this, { signal: this.#abortController?.signal });
-            this.#renderSelectChips(select);
+        for (const el of resolved) {
+            if (!(el instanceof HTMLSelectElement)) continue;
+            el.addEventListener('change', this, { signal: this.#abortController?.signal });
+            this.#renderSelectChips(el);
         }
     }
 
@@ -189,7 +180,9 @@ export class ChipAwayElement extends ElementMaker {
     #connect() {
         this.#cleanup();
         this.#abortController = new AbortController();
-        this.addEventListener('click', this, { signal: this.#abortController.signal });
+        const { signal } = this.#abortController;
+        this.addEventListener('click', this, { signal });
+        this.addEventListener('id-referencer:resolved', this, { signal });
     }
 
     /**
@@ -209,6 +202,12 @@ export class ChipAwayElement extends ElementMaker {
      */
     handleEvent(e) {
         const { type, target } = e;
+
+        if (type === 'id-referencer:resolved') {
+            this.hydrate();
+            return;
+        }
+
         if (!(target instanceof HTMLElement)) return;
 
         switch (type) {
@@ -216,18 +215,10 @@ export class ChipAwayElement extends ElementMaker {
                 if (!(target instanceof HTMLButtonElement)) return;
                 e.stopPropagation();
 
-                const clearSelectId = this.#clearButtonToSelectIDMap.get(target);
-                if (clearSelectId) {
-                    const root = this.#getRoot();
-                    const select = /** @type {HTMLSelectElement | null} */ (
-                        root instanceof ShadowRoot
-                            ? root.getElementById(clearSelectId)
-                            : document.getElementById(clearSelectId)
-                    );
-                    if (select) {
-                        Array.from(select.options).forEach(option => option.selected = false);
-                        select.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
+                const clearSelect = this.#clearButtonToSelectMap.get(target);
+                if (clearSelect) {
+                    Array.from(clearSelect.options).forEach(option => option.selected = false);
+                    clearSelect.dispatchEvent(new Event('change', { bubbles: true }));
                 } else {
                     const option = this.#chipToOptionRefs.get(target);
                     if (option === undefined) return;

@@ -2,7 +2,6 @@
 
 /** @import {RAConfig} from './types/roundabout/types' */
 /** @import {AP, Actions} from './types/chip-away/types' */
-/** @import {AttrPatterns} from './types/assign-gingerly/types' */
 
 /**
  * @type {{ [K in keyof AP]: K }}
@@ -13,43 +12,25 @@ const props = {
 };
 
 /**
+ * Chip rendering is no longer driven by roundabout — the `idRefs` feature
+ * resolves the `for` attribute to live <select> elements and fires
+ * `id-referencer:resolved`, which the element listens for directly.
  * @type {RAConfig<AP, Actions, AP>}
  */
-const raConfig = {
-    compacts:{
-        when_splitFor_changes_call_hydrate: 0,
-    }
-};
-
-/**
- * @type {AttrPatterns<AP>}
- */
-const withAttrs = {
-    for: 'for',
-    _for: {
-        mapsTo: props.splitFor,
-        parser: 'splitter',
-        parserOptions: {
-            delimiter: ' '
-        },
-        sourceOfTruth: true,
-    }
-};
+const raConfig = {};
 
 export const cef = {
     features: {
         roundabout: {
             customData: {
                 raConfig
-            },
-            withAttrs
+            }
         },
         truthSourcer: {
             customData: {
                 observedAttributes: ['for']
             }
-        },
-
+        }
     }
 };
 

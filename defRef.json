@@ -2,22 +2,7 @@
     "features": {
         "roundabout": {
             "customData": {
-                "raConfig": {
-                    "compacts": {
-                        "when_splitFor_changes_call_hydrate": 0
-                    }
-                }
-            },
-            "withAttrs": {
-                "for": "for",
-                "_for": {
-                    "mapsTo": "splitFor",
-                    "parser": "splitter",
-                    "parserOptions": {
-                        "delimiter": " "
-                    },
-                    "sourceOfTruth": true
-                }
+                "raConfig": {}
             }
         },
         "truthSourcer": {
