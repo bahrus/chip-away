@@ -134,3 +134,41 @@ All tests pass, including the new `test6` (deferred `<select>`), which the previ
 - `README.md` still has pre-conversion content (`trans-render/froop`, `ChipAway.bootUp()`, `#getLegendText(self, select)` signatures). Out of scope here but worth a pass.
 - Feature types are inline `@typedef` in `IdRefs.js` rather than a `types/id-referencer/types.d.ts`, to avoid writing into the `types` submodule for something still local.
 
+## Bruce's Response II
+
+Can you add guidance in [new feature guide](../types/NewCustomElementFeature.md) to define all types in the types directory?
+
+Can you create a folder id-referencer in the types folder and move:
+
+
+```JS
+/**
+ * @typedef {Object} IdRefsCustomData
+ * @property {string[]} [searchFor]
+ *   Attribute names on the host to monitor and resolve as space-delimited id
+ *   references. Defaults to `['for']`.
+ * @property {string} [eventType]
+ *   Event dispatched on the host whenever the resolved set for any monitored
+ *   attribute changes. Defaults to `'id-referencer:resolved'`.
+ */
+```
+
+there?
+
+## Implementation Notes II (Claude)
+
+### Guidance added to `NewCustomElementFeature.md`
+
+- **Step 3 ("Create Type Definitions")** now opens with an explicit rule: *all* feature types live in `types/[project-name]/types.d.ts` and nothing else — no `@typedef {Object} ...` blocks in the `.js`. Called out specifically: the `customData` / injection-config shape, event `detail` payloads, and internal helper types. The `.js` only `@import`s.
+- The Step 3 example gained a `CustomData` interface and an event-`detail` interface, plus a `FeatureSpawnContext` re-export (with a fallback showing the local-definition form that `truth-sourcer` / `face-up` use).
+- Step 4 "Key patterns" and the closing "Tips" list each got a one-line reinforcement of the same rule.
+
+### `types/id-referencer/types.d.ts` created
+
+- New folder `types/id-referencer/` with `types.d.ts`. The `IdRefsCustomData` typedef moved there verbatim (as an exported interface), joined by `IdRefsResolvedDetail` (the `id-referencer:resolved` event payload) and a `FeatureSpawnContext` re-export from `../assign-gingerly/types`.
+- `IdRefs.js`: deleted the inline `@typedef IdRefsCustomData` block; the `@import` now pulls `FeatureSpawnContext` **and** `IdRefsCustomData` from `./types/id-referencer/types`. No runtime change — comments only.
+- This writes into the `types` submodule (previously avoided per Implementation Notes follow-up #4); doing so is now the documented expectation.
+
+### Verification
+
+`IdRefs.js` runtime is byte-for-byte equivalent (only JSDoc comments changed), so the existing Playwright suite — including `test6` — is unaffected. Type resolution: `IdRefs.js` → `./types/id-referencer/types` → `../assign-gingerly/types`, both present.

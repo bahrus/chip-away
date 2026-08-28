@@ -1,15 +1,5 @@
 // @ts-check
-/** @import {FeatureSpawnContext} from './types/assign-gingerly/types' */
-
-/**
- * @typedef {Object} IdRefsCustomData
- * @property {string[]} [searchFor]
- *   Attribute names on the host to monitor and resolve as space-delimited id
- *   references. Defaults to `['for']`.
- * @property {string} [eventType]
- *   Event dispatched on the host whenever the resolved set for any monitored
- *   attribute changes. Defaults to `'id-referencer:resolved'`.
- */
+/** @import {FeatureSpawnContext, IdRefsCustomData} from './types/id-referencer/types' */
 
 const DEFAULT_EVENT_TYPE = 'id-referencer:resolved';
 
