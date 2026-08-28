@@ -175,18 +175,18 @@ export class ChipAwayElement extends ElementMaker {
 
     /**
      * Main render action - called when 'for' property/attribute changes.
+     * @param {AP} self
      */
-    #hydrate() {
-        const forAttr = this.getAttribute('for') || '';
-        if (!forAttr) return;
+    hydrate(self) {
 
-        // Clear existing fieldsets using the map
+        const {splitFor} = self;
+        if(!splitFor) return;
+
+                // Clear existing fieldsets using the map
         this.#selectIDToChipsContainerMap.forEach(fieldset => fieldset.remove());
         this.#selectIDToChipsContainerMap.clear();
 
-        const selectIds = forAttr.split(/\s+/).filter(Boolean);
-
-        for (const id of selectIds) {
+        for (const id of splitFor) {
             const select = /** @type {HTMLSelectElement | null} */ (this.#findElement(id));
             if (!select) continue;
             select.addEventListener('change', this, { signal: this.#abortController?.signal });
@@ -201,7 +201,7 @@ export class ChipAwayElement extends ElementMaker {
         this.#cleanup();
         this.#abortController = new AbortController();
         this.addEventListener('click', this, { signal: this.#abortController.signal });
-        this.#hydrate();
+        //this.#hydrate();
     }
 
     /**

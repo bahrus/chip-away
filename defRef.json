@@ -1,18 +1,11 @@
 {
     "features": {
-        "truthSourcer": {
-            "customData": {
-                "observedAttributes": [
-                    "for"
-                ]
-            }
-        },
         "roundabout": {
             "customData": {
                 "raConfig": {
-                    "propagate": [
-                        "for"
-                    ]
+                    "compacts": {
+                        "when_splitFor_changes_call_hydrate": 0
+                    }
                 }
             },
             "withAttrs": {
@@ -22,8 +15,16 @@
                     "parser": "splitter",
                     "parserOptions": {
                         "delimiter": " "
-                    }
+                    },
+                    "sourceOfTruth": true
                 }
+            }
+        },
+        "truthSourcer": {
+            "customData": {
+                "observedAttributes": [
+                    "for"
+                ]
             }
         }
     }

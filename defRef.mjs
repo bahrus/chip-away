@@ -1,7 +1,7 @@
 // @ts-check
 
 /** @import {RAConfig} from './types/roundabout/types' */
-/** @import {AP} from './types/chip-away/types' */
+/** @import {AP, Actions} from './types/chip-away/types' */
 /** @import {AttrPatterns} from './types/assign-gingerly/types' */
 
 /**
@@ -13,10 +13,13 @@ const props = {
 };
 
 /**
- * @type {RAConfig<AP, AP, AP>}
+ * @type {RAConfig<AP, Actions, AP>}
  */
 const raConfig = {
-    propagate: [props.for]
+    //propagate: [props.for],
+    compacts:{
+        when_splitFor_changes_call_hydrate: 0,
+    }
 };
 
 /**
@@ -29,23 +32,25 @@ const withAttrs = {
         parser: 'splitter',
         parserOptions: {
             delimiter: ' '
-        }
+        },
+        sourceOfTruth: true,
     }
 };
 
 export const cef = {
     features: {
-        truthSourcer: {
-            customData: {
-                observedAttributes: ['for']
-            }
-        },
         roundabout: {
             customData: {
                 raConfig
             },
             withAttrs
-        }
+        },
+        truthSourcer: {
+            customData: {
+                observedAttributes: ['for']
+            }
+        },
+
     }
 };
 
