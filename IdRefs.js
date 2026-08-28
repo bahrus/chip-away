@@ -4,26 +4,31 @@
 const DEFAULT_EVENT_TYPE = 'id-referencer:resolved';
 
 /**
- * `IdRefs` — a custom element feature that resolves the id references named in
- * one or more host attributes to live elements, and keeps watching the DOM
- * until every referenced id has been found.
+ * `IdRefs` — a custom element feature that resolves a list of element ids to
+ * live elements against the host's root node, and keeps watching the DOM
+ * until every id has been found.
  *
  * Local implementation of https://github.com/bahrus/id-referencer (kept here
  * until it proves out; the class name `IdRefs` matches the intended package
- * export). The feature is deliberately ignorant of what the host does with the
- * elements — its only job is `attribute value` → live `Element[]`.
+ * export). Unlike the package README's first sketch, this variant does **not**
+ * read a host attribute — the host hands it an already-split `string[]` of ids
+ * via {@linkcode IdRefs#search}. That keeps the id-list parsing (attribute →
+ * `string[]`) in the host's reactive graph (roundabout `splitter` parser) and
+ * leaves this feature with the single reusable job: `string[]` → live
+ * `Element[]`, with "wait for the missing ones" built in.
  *
  * Wiring:
  * ```js
  * customElements.assignFeatures(MyElement, {
- *     idRefs: { spawn: IdRefs, customData: { searchFor: ['for'] } }
+ *     idRefs: { spawn: IdRefs, customData: { eventType: 'id-referencer:resolved' } }
  * });
  * ```
  *
  * Consumption:
  * ```js
- * el.idRefs.get('for');   // HTMLElement[] — resolved, still-connected
- * el.idRefs.for;          // WeakRef<Element>[] — raw refs (README parity)
+ * el.idRefs.search(['sel1', 'sel2']);   // (re)point at these ids
+ * el.idRefs.get();                       // Element[] — resolved, still-connected, in order
+ * el.idRefs.complete;                    // boolean
  * el.addEventListener('id-referencer:resolved', e => { ... });
  * ```
  */
@@ -31,26 +36,20 @@ export class IdRefs {
     /** @type {WeakRef<HTMLElement>} */
     #hostRef;
 
-    /** @type {string[]} */
-    #searchFor;
-
     /** @type {string} */
     #eventType;
 
-    /** attr name -> current ordered id list @type {Map<string, string[]>} */
-    #ids = new Map();
+    /** current ordered id list @type {string[]} */
+    #ids = [];
 
-    /** attr name -> resolved refs, index-aligned with the id list @type {Map<string, WeakRef<Element>[]>} */
-    #refs = new Map();
-
-    /** @type {MutationObserver | undefined} */
-    #hostObserver;
+    /** resolved refs, index-aligned with {@linkcode #ids} @type {(WeakRef<Element> | undefined)[]} */
+    #refs = [];
 
     /** @type {MutationObserver | undefined} */
     #rootObserver;
 
-    /** @type {boolean} */
-    #started = false;
+    /** whether the host is currently connected (drives observer arming) @type {boolean} */
+    #connected = false;
 
     /**
      * @param {HTMLElement} hostElement
@@ -61,19 +60,7 @@ export class IdRefs {
         this.#hostRef = new WeakRef(hostElement);
         /** @type {IdRefsCustomData} */
         const customData = ctx?.injection?.customData ?? {};
-        this.#searchFor = customData.searchFor ?? ['for'];
         this.#eventType = customData.eventType ?? DEFAULT_EVENT_TYPE;
-
-        // Expose one `WeakRef<Element>[]` getter per monitored attribute, keyed
-        // by the camelCased attribute name (`aria-controls` -> `ariaControls`).
-        for (const attr of this.#searchFor) {
-            const key = attrToProp(attr);
-            if (key in this) continue;
-            Object.defineProperty(this, key, {
-                get: () => this.#refs.get(attr)?.filter(Boolean) ?? [],
-                enumerable: true,
-            });
-        }
 
         if (initVals) Object.assign(this, initVals);
     }
@@ -81,83 +68,60 @@ export class IdRefs {
     // ─── lifecycle (forwarded from the host) ──────────────────────────────────
 
     connectedCallback() {
-        // Done here rather than in the constructor: by now the host's feature
-        // getter has cached this instance, so a handler reacting to our event
-        // can safely read `host.idRefs` without re-triggering the spawn.
-        if (this.#started) return;
-        this.#started = true;
-        this.#connect();
+        this.#connected = true;
+        // Re-arm the root observer if we reconnected with ids still outstanding.
+        if (this.#ids.length) this.#resolve(false);
     }
 
     disconnectedCallback() {
-        this.#started = false;
-        this.#disconnect();
+        this.#connected = false;
+        this.#rootObserver?.disconnect();
+        this.#rootObserver = undefined;
     }
 
-    // ─── public read API ─────────────────────────────────────────────────────
+    // ─── public API ──────────────────────────────────────────────────────────
 
     /**
-     * The resolved, still-connected elements for a monitored attribute, in the
-     * order their ids appear in the attribute value.
-     * @param {string} attr
+     * Point the feature at a new list of ids to resolve. Idempotent — passing
+     * the same ids in the same order is a no-op.
+     *
+     * Resolves synchronously against the host's root node; the caller is
+     * expected to read {@linkcode get} right after. If any id is still missing,
+     * a MutationObserver is kept alive on the root node until it appears, and
+     * `eventType` is dispatched on the host when a later (DOM-mutation-driven)
+     * pass changes the resolved set. The synchronous pass here never dispatches.
+     *
+     * @param {string[]} ids
+     */
+    search(ids) {
+        const next = (ids ?? []).filter(Boolean);
+        if (sameList(next, this.#ids)) return;
+        this.#ids = next.slice();
+        this.#refs = new Array(next.length);
+        this.#resolve(false);
+    }
+
+    /**
+     * The resolved, still-connected elements, in the order their ids were
+     * passed to {@linkcode search}.
      * @returns {Element[]}
      */
-    get(attr) {
-        const refs = this.#refs.get(attr);
-        if (!refs) return [];
+    get() {
         /** @type {Element[]} */
         const out = [];
-        for (const ref of refs) {
+        for (const ref of this.#refs) {
             const el = ref?.deref();
             if (el && el.isConnected) out.push(el);
         }
         return out;
     }
 
-    /** True once every id in every monitored attribute has been resolved. */
+    /** True once every id has been resolved to a still-connected element. */
     get complete() {
-        for (const [attr, ids] of this.#ids) {
-            if (this.get(attr).length < ids.length) return false;
-        }
-        return true;
+        return this.get().length >= this.#ids.length;
     }
 
     // ─── internals ───────────────────────────────────────────────────────────
-
-    #connect() {
-        const host = this.#hostRef.deref();
-        if (!host || this.#searchFor.length === 0) return;
-
-        this.#hostObserver = new MutationObserver(records => {
-            const changed = new Set();
-            for (const r of records) {
-                if (r.attributeName) changed.add(r.attributeName);
-            }
-            let missing = false;
-            for (const attr of changed) {
-                if (this.#resolveAttr(attr)) missing = true;
-            }
-            if (missing) this.#armRootObserver();
-            else this.#maybeRest();
-        });
-        this.#hostObserver.observe(host, {
-            attributes: true,
-            attributeFilter: this.#searchFor,
-        });
-
-        let missing = false;
-        for (const attr of this.#searchFor) {
-            if (this.#resolveAttr(attr)) missing = true;
-        }
-        if (missing) this.#armRootObserver();
-    }
-
-    #disconnect() {
-        this.#hostObserver?.disconnect();
-        this.#hostObserver = undefined;
-        this.#rootObserver?.disconnect();
-        this.#rootObserver = undefined;
-    }
 
     /** @returns {Document | ShadowRoot} */
     #root() {
@@ -166,39 +130,35 @@ export class IdRefs {
     }
 
     /**
-     * Re-parse and re-resolve one attribute. Dispatches the change event when
-     * the resolved element list actually changed.
-     * @param {string} attr
-     * @returns {boolean} whether the attribute still has unresolved ids
+     * (Re-)resolve every still-missing id. Arms the root observer while
+     * anything is outstanding and the host is connected; rests it otherwise.
+     * @param {boolean} dispatch whether to fire `eventType` if the set changed
      */
-    #resolveAttr(attr) {
-        const host = this.#hostRef.deref();
-        if (!host) return false;
-
-        const ids = (host.getAttribute(attr) ?? '').split(/\s+/).filter(Boolean);
-        this.#ids.set(attr, ids);
-
+    #resolve(dispatch) {
         const root = this.#root();
-        /** @type {WeakRef<Element>[]} */
-        const refs = [];
+        const before = dispatch ? this.get() : null;
+
         let missing = 0;
-        for (const id of ids) {
-            const el = root.getElementById(id);
-            if (el) refs.push(new WeakRef(el));
-            else missing++;
+        for (let i = 0; i < this.#ids.length; i++) {
+            const current = this.#refs[i]?.deref();
+            if (current && current.isConnected) continue;
+            const el = root.getElementById(this.#ids[i]);
+            if (el) this.#refs[i] = new WeakRef(el);
+            else {
+                this.#refs[i] = undefined;
+                missing++;
+            }
         }
 
-        const before = this.get(attr);
-        this.#refs.set(attr, refs);
-        const after = this.get(attr);
-        if (!sameElements(before, after)) this.#dispatch(attr);
+        if (missing > 0 && this.#connected) this.#arm();
+        else this.#rest();
 
-        return missing > 0;
+        if (dispatch && before && !sameElements(before, this.get())) this.#dispatch();
     }
 
-    #armRootObserver() {
+    #arm() {
         if (this.#rootObserver) return;
-        this.#rootObserver = new MutationObserver(() => this.#sweep());
+        this.#rootObserver = new MutationObserver(() => this.#resolve(true));
         this.#rootObserver.observe(this.#root(), {
             childList: true,
             subtree: true,
@@ -207,41 +167,30 @@ export class IdRefs {
         });
     }
 
-    /** Re-check every attribute that still has missing ids. */
-    #sweep() {
-        let stillMissing = false;
-        for (const attr of this.#searchFor) {
-            const ids = this.#ids.get(attr) ?? [];
-            if (this.get(attr).length >= ids.length) continue;
-            if (this.#resolveAttr(attr)) stillMissing = true;
-        }
-        if (!stillMissing) this.#maybeRest();
+    #rest() {
+        this.#rootObserver?.disconnect();
+        this.#rootObserver = undefined;
     }
 
-    /** Stop the root observer once nothing is outstanding (README semantics). */
-    #maybeRest() {
-        if (this.complete) {
-            this.#rootObserver?.disconnect();
-            this.#rootObserver = undefined;
-        }
-    }
-
-    /** @param {string} attr */
-    #dispatch(attr) {
+    #dispatch() {
         const host = this.#hostRef.deref();
         if (!host) return;
         host.dispatchEvent(new CustomEvent(this.#eventType, {
-            detail: { attr, ids: this.#ids.get(attr) ?? [], elements: this.get(attr) },
+            detail: { ids: this.#ids.slice(), elements: this.get() },
         }));
     }
 }
 
 /**
- * `aria-controls` -> `ariaControls`, `for` -> `for`.
- * @param {string} attr
+ * @param {readonly string[]} a
+ * @param {readonly string[]} b
  */
-function attrToProp(attr) {
-    return attr.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+function sameList(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
 }
 
 /**

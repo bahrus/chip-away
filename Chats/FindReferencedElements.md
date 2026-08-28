@@ -172,3 +172,82 @@ there?
 ### Verification
 
 `IdRefs.js` runtime is byte-for-byte equivalent (only JSDoc comments changed), so the existing Playwright suite — including `test6` — is unaffected. Type resolution: `IdRefs.js` → `./types/id-referencer/types` → `../assign-gingerly/types`, both present.
+
+## Bruce's response
+
+I prefer that rather than IdRefs reading a passed in attribute, IdRefs gets passed in a split string array of IDs to search for, and bring back:
+
+```JS
+
+const raConfig = {
+    compacts:{
+        when_splitFor_changes_call_hydrate: 0,
+    }
+};
+
+/**
+ * @type {AttrPatterns<AP>}
+ */
+const withAttrs = {
+    for: 'for',
+    _for: {
+        mapsTo: props.splitFor,
+        parser: 'splitter',
+        parserOptions: {
+            delimiter: ' '
+        },
+        sourceOfTruth: true,
+    }
+};
+```
+
+If you can figure out how to orchestrate things so that splitFor gets passed to IdRefs, great, otherwise, I'll provide more guidance.
+
+## Implementation Notes III (Claude)
+
+Orchestrated it — no extra guidance needed. `splitFor` reaches `IdRefs` through the element's own `hydrate()`, which is the junction roundabout already calls.
+
+### New data flow
+
+```
+for="a b"  ──truthSourcer──▶  for property
+           ──roundabout withAttrs (splitter, ' ', sourceOfTruth)──▶  splitFor: string[]
+splitFor changes ──roundabout compact when_splitFor_changes_call_hydrate──▶ el.hydrate(el)
+el.hydrate() ──▶ el.idRefs.search(splitFor)   // push the id list in
+             ──▶ el.idRefs.get()              // pull resolved <select>s back, render
+late <select> appears ──IdRefs root MutationObserver──▶ 'id-referencer:resolved' ──▶ el.hydrate()
+```
+
+So `IdRefs` is now a pure `string[]` → live `Element[]` resolver; the host owns attribute parsing (via roundabout) and orchestration (via `hydrate`).
+
+### `IdRefs` API change
+
+- **Removed** attribute reading entirely: no `searchFor`, no host-attribute `MutationObserver`, no per-attribute keying (`#ids`/`#refs` maps → plain arrays), no `attrToProp` / `el.idRefs.<attr>` getters.
+- **Added** `search(ids: string[])` — idempotent (same list in same order = no-op), resolves synchronously against `host.getRootNode()`, and arms the root-node `MutationObserver` (`childList`/`subtree` + `attributeFilter:['id']`) while anything is missing. It **rests** once complete, exactly as before.
+- `get()` now takes no argument → `Element[]` (resolved, still-connected, in id order). `complete` unchanged in spirit.
+- **Dispatch discipline:** `search()` and the forwarded `connectedCallback` **never** dispatch — the caller reads `get()` synchronously right after `search()`. Only the observer-driven re-resolution (`#resolve(true)`) dispatches `id-referencer:resolved`. This removes the `hydrate → search → dispatch → hydrate` re-entrancy: the event only ever fires for genuinely *asynchronous* (later) resolutions, and the resulting `hydrate` calls `search()` with the unchanged list, which no-ops.
+- `id-referencer:resolved` `detail` dropped `attr` (there is no attribute anymore) → `{ ids, elements }`.
+
+### `chip-away-element.js`
+
+- `hydrate(self)` now: `idRefs.search(self?.splitFor ?? rt.splitFor ?? [])`, then renders from `idRefs.get()`. (`self` is the vm roundabout passes to the compact; the event path and the connect path call `hydrate()` with no arg and fall back to the live property.)
+- `connectedCallback` gained a trailing `this.hydrate()` for a deterministic first/re-connect render — roundabout's compact may not have fired yet on first connect, and on **re**connect any `id-referencer:resolved` emitted during feature-callback forwarding lands *before* `#connect()` re-attaches the listener. `hydrate()` is idempotent so the redundant early call is free.
+- Header comment updated to describe the `for → splitFor → hydrate → idRefs` path.
+
+### Wiring
+
+- `defRef.mjs`: restored `raConfig.compacts.when_splitFor_changes_call_hydrate: 0` and the `withAttrs` `for → splitFor` `splitter` (`sourceOfTruth: true`), verbatim from your snippet. `roundabout` config now carries both `customData.raConfig` and `withAttrs`; `wireFeatures.js` already forwarded `roundaboutConfig.withAttrs`, so no change needed there beyond dropping `idRefs`' `searchFor` (now `{ callbackForwarding }` only). Regenerated `defRef.json` via `npm run build`.
+- `truthSourcer` still `observedAttributes: ['for']` so the `for` property stays reflected and roundabout's `withAttrs` sees attribute changes.
+
+### Types
+
+- `types/id-referencer/types.d.ts`: `IdRefsCustomData` reduced to `{ eventType? }`; `IdRefsResolvedDetail` lost `attr`.
+- `types/chip-away/types.d.ts`: `RunTimeProps` gained `idRefs?: import('../../IdRefs.js').IdRefs` so `hydrate` can read the feature without a bare-`this` type error (`splitFor` was already on `AllProps`).
+
+### Verification
+
+All 6 Playwright tests pass, including `test6` (a `<select>` injected 300 ms after connect still renders chips — driven by the root `MutationObserver` → `id-referencer:resolved` → `hydrate`).
+
+### Note for the package
+
+This diverges from the `id-referencer` README's attribute-driven `searchFor` design toward a "host hands in the id list" design. If you adopt it in the package, the feature keeps only the reusable core (`string[]` → live `Element[]` + wait-for-missing + rest-when-complete) and callers get to keep attribute parsing in whatever reactive system they already run. The `live: true` follow-up (keep observing after complete, track removals + `id` reassignment) from Implementation Notes I still applies and is still not done here.

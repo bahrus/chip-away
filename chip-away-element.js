@@ -7,10 +7,13 @@ import { ElementMaker } from 'el-maker/ElementMaker.js';
  * Custom element that renders removable chips for selected options of
  * one or more target <select multiple> elements.
  *
- * The `for` attribute (space-separated ids) is resolved to live <select>
- * elements by the reusable `idRefs` feature — including waiting, via a
- * MutationObserver, for referenced selects that aren't in the DOM yet.
- * This element only listens for `idRefs`' resolution event and renders.
+ * The `for` attribute is parsed to `splitFor` (a `string[]` of ids) by
+ * roundabout's `splitter` parser; a `when_splitFor_changes_call_hydrate`
+ * compact then drives `hydrate()`. `hydrate()` hands `splitFor` to the
+ * reusable `idRefs` feature, which resolves the ids to live <select>
+ * elements — including waiting, via a MutationObserver, for referenced
+ * selects that aren't in the DOM yet. A late-arriving select fires
+ * `idRefs`' `id-referencer:resolved` event, which re-runs `hydrate()`.
  *
  * @extends {ElementMaker<AP, AP>}
  */
@@ -38,6 +41,10 @@ export class ChipAwayElement extends ElementMaker {
     connectedCallback() {
         super.connectedCallback?.();
         this.#connect();
+        // Deterministic first/re-connect render: roundabout's compact may not
+        // have fired yet, and on reconnect any `id-referencer:resolved` from
+        // feature forwarding was dispatched before `#connect()` re-listened.
+        this.hydrate();
     }
 
     disconnectedCallback() {
@@ -154,14 +161,18 @@ export class ChipAwayElement extends ElementMaker {
     }
 
     /**
-     * Render (or re-render) chips for every currently-resolved <select>.
-     * Invoked whenever the `idRefs` feature reports a change to the set of
-     * elements referenced by the `for` attribute.
+     * Feed the current `splitFor` id list to `idRefs` and (re-)render chips for
+     * every currently-resolved <select>. Invoked by roundabout's
+     * `when_splitFor_changes_call_hydrate` compact and by the
+     * `id-referencer:resolved` event when a referenced select appears later.
      * @param {AP} [self]
      */
     hydrate(self) {
+        const rt = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
+        const idRefs = rt.idRefs;
+        idRefs?.search?.(self?.splitFor ?? rt.splitFor ?? []);
         /** @type {Element[]} */
-        const resolved = this.idRefs?.get?.('for') ?? [];
+        const resolved = idRefs?.get?.() ?? [];
 
         // Rebuild all fieldsets from scratch.
         this.#selectIDToChipsContainerMap.forEach(fieldset => fieldset.remove());

@@ -31,7 +31,7 @@ export async function wireFeatures(ElementClass, cfg) {
             callbackForwarding: ['connectedCallback']
         },
         idRefs: {
-            customData: { searchFor: ['for'] },
+            // No `searchFor`: the host feeds `idRefs.search(splitFor)` itself.
             callbackForwarding: ['connectedCallback', 'disconnectedCallback']
         }
     });
