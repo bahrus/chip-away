@@ -41,10 +41,6 @@ export class ChipAwayElement extends ElementMaker {
     connectedCallback() {
         super.connectedCallback?.();
         this.#connect();
-        // Deterministic first/re-connect render: roundabout's compact may not
-        // have fired yet, and on reconnect any `id-referencer:resolved` from
-        // feature forwarding was dispatched before `#connect()` re-listened.
-        //this.hydrate();
     }
 
     disconnectedCallback() {
