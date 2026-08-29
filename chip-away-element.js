@@ -219,9 +219,9 @@ export class ChipAwayElement extends ElementMaker {
      */
     handleEvent(e) {
         const { type, target } = e;
-
+        const self = /** @type {AP} */ ( /** @type {any} */(this));
         if (type === 'id-referencer:resolved') {
-            this.hydrate(target);
+            this.hydrate(self);
             return;
         }
 
