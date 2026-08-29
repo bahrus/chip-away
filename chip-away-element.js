@@ -15,7 +15,7 @@ import { ElementMaker } from 'el-maker/ElementMaker.js';
  * selects that aren't in the DOM yet. A late-arriving select fires
  * `idRefs`' `id-referencer:resolved` event, which re-runs `hydrate()`.
  *
- * @extends {ElementMaker<AP, AP>}
+ * @extends {ElementMaker}
  */
 export class ChipAwayElement extends ElementMaker {
     static supportedFeatures = {
@@ -39,12 +39,10 @@ export class ChipAwayElement extends ElementMaker {
     #abortController;
 
     connectedCallback() {
-        super.connectedCallback?.();
         this.#connect();
     }
 
     disconnectedCallback() {
-        super.disconnectedCallback?.();
         this.#cleanup();
     }
 
