@@ -10,24 +10,28 @@
 const props = {
     for: 'for',
     splitFor: 'splitFor',
-    join: 'join'
+    join: 'join',
+    readonly: 'readonly'
 };
 
 /**
  * `for` (space-separated ids) is parsed to `splitFor` (string[]) by the
- * `splitter` parser below; the boolean `join` attribute is parsed once (at
- * spawn) to the `join` property. Either compact calls `hydrate`, which hands
- * `splitFor` to the `idRefs` feature for id -> live element resolution and
- * renders per `join` (one comma-joined summary chip vs. one chip per option).
+ * `splitter` parser below; the boolean `join` and `readonly` attributes are
+ * parsed once (at spawn) to like-named properties. Any of these compacts calls
+ * `hydrate`, which hands `splitFor` to the `idRefs` feature for id -> live
+ * element resolution and re-renders: `join` picks one comma-joined summary chip
+ * vs. one chip per option, `readonly` drops every remove (✕) affordance.
  *
- * `join` is plain config, not a `sourceOfTruth` attribute: the attribute seeds
- * the initial value, and thereafter the `join` *property* is authoritative.
+ * `join` / `readonly` are plain config, not `sourceOfTruth` attributes: the
+ * attribute seeds the initial value, and thereafter the property is
+ * authoritative.
  * @type {RAConfig<AP, Actions, AP>}
  */
 const raConfig = {
     compacts: {
         when_splitFor_changes_call_hydrate: 0,
         when_join_changes_call_hydrate: 0,
+        when_readonly_changes_call_hydrate: 0,
     },
 };
 
@@ -46,6 +50,11 @@ const withAttrs = {
     },
     join: 'join',
     _join: {
+        instanceOf: 'Boolean',
+        valIfNull: false,
+    },
+    readonly: 'readonly',
+    _readonly: {
         instanceOf: 'Boolean',
         valIfNull: false,
     }

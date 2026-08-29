@@ -5,7 +5,8 @@
                 "raConfig": {
                     "compacts": {
                         "when_splitFor_changes_call_hydrate": 0,
-                        "when_join_changes_call_hydrate": 0
+                        "when_join_changes_call_hydrate": 0,
+                        "when_readonly_changes_call_hydrate": 0
                     }
                 }
             },
@@ -21,6 +22,11 @@
                 },
                 "join": "join",
                 "_join": {
+                    "instanceOf": "Boolean",
+                    "valIfNull": false
+                },
+                "readonly": "readonly",
+                "_readonly": {
                     "instanceOf": "Boolean",
                     "valIfNull": false
                 }

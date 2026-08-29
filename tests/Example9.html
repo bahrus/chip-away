@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chip Away - readonly</title>
+    <!--#include virtual="/imports.html" -->
+    <link rel="stylesheet" href="../default.css">
+</head>
+<body>
+    <label>
+        <span>Select Options:</span>
+        <select id="select1" multiple>
+            <option selected value="option1">Option 1</option>
+            <option selected value="option2">Option 2</option>
+            <option selected value="option3">Option 3</option>
+        </select>
+    </label>
+
+    <chip-away for="select1" readonly></chip-away>
+
+    <script type="module">
+        import '../index.js';
+
+        const el = document.querySelector('chip-away');
+        const chipBtns = () => document.querySelectorAll('.chip button').length;
+        const clearBtns = () => document.querySelectorAll('.clear-all-trigger').length;
+
+        async function runTest(){
+            const mark = v => document.getElementById('target').setAttribute('mark', v);
+
+            // readonly: chips render, but no remove affordances
+            if(document.querySelectorAll('.chip').length !== 3){ mark('bad'); return; }
+            if(chipBtns() !== 0 || clearBtns() !== 0){ mark('bad'); return; }
+
+            // clicking a chip does nothing (no button to click, options stay selected)
+            document.querySelector('.chip').click();
+            await new Promise(r => setTimeout(r, 100));
+            if(document.querySelectorAll('.chip').length !== 3){ mark('bad'); return; }
+
+            // turn readonly off -> affordances come back
+            el.readonly = false;
+            await new Promise(r => setTimeout(r, 200));
+            if(chipBtns() !== 3 || clearBtns() !== 1){ mark('bad'); return; }
+
+            mark('good');
+        }
+
+        setTimeout(runTest, 1000);
+    </script>
+
+    <div id="target"></div>
+</body>
+</html>

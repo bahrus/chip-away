@@ -15,6 +15,10 @@ import { ElementMaker } from 'el-maker/ElementMaker.js';
  * selects that aren't in the DOM yet. A late-arriving select fires
  * `idRefs`' `id-referencer:resolved` event, which re-runs `hydrate()`.
  *
+ * Two boolean knobs also re-run `hydrate()` via their own compacts:
+ * `join` (one comma-joined summary chip per <select> instead of one chip per
+ * option) and `readonly` (render for display only — no remove affordances).
+ *
  * @extends {ElementMaker}
  */
 export class ChipAwayElement extends ElementMaker {
@@ -69,49 +73,57 @@ export class ChipAwayElement extends ElementMaker {
     }
 
     /**
-     * Build the shared chip shell (`.chip` > `span` label + delete `button`).
-     * Callers own what the button does — see {@linkcode #createChipElement}
-     * (per-option) and {@linkcode #renderInlineChip} (per-select summary).
+     * Build the shared chip shell (`.chip` > `span` label, plus a delete
+     * `button` unless `removable` is false). Callers own what the button does —
+     * see {@linkcode #createChipElement} (per-option) and
+     * {@linkcode #renderJoinedChip} (per-select summary).
      * @param {string} labelText
-     * @returns {{ chip: HTMLElement, button: HTMLButtonElement }}
+     * @param {boolean} removable
+     * @returns {{ chip: HTMLElement, button: HTMLButtonElement | null }}
      */
-    #createChip(labelText) {
+    #createChip(labelText, removable) {
         const chip = document.createElement('div');
         chip.classList.add('chip');
         chip.part.add('chip-remove-option-container');
 
         const span = document.createElement('span');
         span.textContent = labelText;
+        chip.appendChild(span);
+
+        if (!removable) return { chip, button: null };
 
         const button = document.createElement('button');
         button.type = 'button';
         button.part.add('chip-remove-option-trigger');
-
-        chip.appendChild(span);
         chip.appendChild(button);
 
         return { chip, button };
     }
 
     /**
-     * Create a single chip element for one selected option; its ✕ deselects
-     * just that option.
+     * Create a single chip element for one selected option; its ✕ (when present)
+     * deselects just that option.
      * @param {HTMLOptionElement} option
+     * @param {boolean} removable
      * @returns {HTMLElement}
      */
-    #createChipElement(option) {
-        const { chip, button } = this.#createChip(option.textContent);
-        button.ariaLabel = 'Remove';
-        this.#chipToOptionRefs.set(button, option);
+    #createChipElement(option, removable) {
+        const { chip, button } = this.#createChip(option.textContent, removable);
+        if (button) {
+            button.ariaLabel = 'Remove';
+            this.#chipToOptionRefs.set(button, option);
+        }
         return chip;
     }
 
     /**
-     * Create the container fieldset for chips of a single select.
+     * Create the container fieldset for chips of a single select. The "clear
+     * all" trigger is omitted when `removable` is false.
      * @param {HTMLSelectElement} select
+     * @param {boolean} removable
      * @returns {HTMLFieldSetElement}
      */
-    #createChipsContainer(select) {
+    #createChipsContainer(select, removable) {
         const { id } = select;
         let fieldset = this.#selectIDToChipsContainerMap.get(id);
         if (fieldset) return fieldset;
@@ -123,34 +135,39 @@ export class ChipAwayElement extends ElementMaker {
         legend.textContent = this.#getLegendText(select);
         fieldset.appendChild(legend);
 
-        const clearButton = document.createElement('button');
-        clearButton.type = 'button';
-        clearButton.classList.add('clear-all-trigger');
-        clearButton.ariaLabel = 'Clear all';
-        this.#clearButtonToSelectMap.set(clearButton, select);
-        legend.appendChild(clearButton);
+        if (removable) {
+            const clearButton = document.createElement('button');
+            clearButton.type = 'button';
+            clearButton.classList.add('clear-all-trigger');
+            clearButton.ariaLabel = 'Clear all';
+            this.#clearButtonToSelectMap.set(clearButton, select);
+            legend.appendChild(clearButton);
+        }
 
         return fieldset;
     }
 
     /**
-     * Render chips for one `<select>`, honoring the `join` prop: one summary
-     * chip when set, one chip per selected option otherwise.
+     * Render chips for one `<select>`, honoring `join` (one summary chip vs. one
+     * chip per option) and `readonly` (no remove affordances).
      * @param {HTMLSelectElement} select
      */
     #renderSelect(select) {
-        const { join } = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
-        if (join) this.#renderJoinedChip(select);
-        else this.#renderSelectChips(select);
+        const { join, readonly } = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
+        const removable = !readonly;
+        if (join) this.#renderJoinedChip(select, removable);
+        else this.#renderSelectChips(select, removable);
     }
 
     /**
      * `join` mode: collapse every selected option into a single chip whose
-     * label is a comma-delimited list. Its ✕ clears all selected options for
-     * this `<select>` (routed through {@linkcode #clearButtonToSelectMap}).
+     * label is a comma-delimited list. Its ✕ (unless `removable` is false)
+     * clears all selected options for this `<select>` (routed through
+     * {@linkcode #clearButtonToSelectMap}).
      * @param {HTMLSelectElement} select
+     * @param {boolean} removable
      */
-    #renderJoinedChip(select) {
+    #renderJoinedChip(select, removable) {
         const selectedOptions = Array.from(select.selectedOptions)
             .filter(option => option.value !== '');
 
@@ -164,13 +181,15 @@ export class ChipAwayElement extends ElementMaker {
             return;
         }
 
-        const container = this.#createChipsContainer(select);
+        const container = this.#createChipsContainer(select, removable);
         container.querySelectorAll('.chip').forEach(chip => chip.remove());
 
         const label = selectedOptions.map(option => option.textContent).join(', ');
-        const { chip, button } = this.#createChip(label);
-        button.ariaLabel = 'Remove all';
-        this.#clearButtonToSelectMap.set(button, select);
+        const { chip, button } = this.#createChip(label, removable);
+        if (button) {
+            button.ariaLabel = 'Remove all';
+            this.#clearButtonToSelectMap.set(button, select);
+        }
         container.appendChild(chip);
 
         if (!this.contains(container)) {
@@ -181,8 +200,9 @@ export class ChipAwayElement extends ElementMaker {
     /**
      * Render all chips for a given select element.
      * @param {HTMLSelectElement} select
+     * @param {boolean} removable
      */
-    #renderSelectChips(select) {
+    #renderSelectChips(select, removable) {
         const selectedOptions = Array.from(select.selectedOptions)
             .filter(option => option.value !== '');
 
@@ -196,14 +216,14 @@ export class ChipAwayElement extends ElementMaker {
             return;
         }
 
-        const container = this.#createChipsContainer(select);
+        const container = this.#createChipsContainer(select, removable);
 
         // Clear existing chips (but keep the legend)
         const existingChips = container.querySelectorAll('.chip');
         existingChips.forEach(chip => chip.remove());
 
         for (const option of selectedOptions) {
-            const chip = this.#createChipElement(option);
+            const chip = this.#createChipElement(option, removable);
             container.appendChild(chip);
         }
 
@@ -215,9 +235,8 @@ export class ChipAwayElement extends ElementMaker {
     /**
      * Feed the current `splitFor` id list to `idRefs` and (re-)render chips for
      * every currently-resolved <select>. Invoked by roundabout's
-     * `when_splitFor_changes_call_hydrate` / `when_join_changes_call_hydrate`
-     * compacts and by the `id-referencer:resolved` event when a referenced
-     * select appears later.
+     * `when_{splitFor,join,readonly}_changes_call_hydrate` compacts and by the
+     * `id-referencer:resolved` event when a referenced select appears later.
      * @param {RunTimeProps} self
      */
     hydrate(self) {
