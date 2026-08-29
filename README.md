@@ -7,6 +7,8 @@
 
 *chip-away* is a web component that transforms selected options from HTML `<select>` elements into an interactive, visually-distinct chip interface. It provides users with an intuitive way to review, manage, and remove selected values through a clean, user-friendly UI.
 
+![Screenshot of demo/dev.html](image.png)
+
 ## Features
 
 - **Automatic Chip Generation**: Converts selected options into visual chips
