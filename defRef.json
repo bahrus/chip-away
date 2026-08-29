@@ -6,7 +6,8 @@
                     "compacts": {
                         "when_splitFor_changes_call_hydrate": 0,
                         "when_join_changes_call_hydrate": 0,
-                        "when_readonly_changes_call_hydrate": 0
+                        "when_readonly_changes_call_hydrate": 0,
+                        "when_maxJoin_changes_call_hydrate": 0
                     }
                 }
             },
@@ -29,6 +30,10 @@
                 "_readonly": {
                     "instanceOf": "Boolean",
                     "valIfNull": false
+                },
+                "maxJoin": "max-join",
+                "_maxJoin": {
+                    "instanceOf": "Number"
                 }
             }
         },

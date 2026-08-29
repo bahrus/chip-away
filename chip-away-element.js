@@ -15,9 +15,10 @@ import { ElementMaker } from 'el-maker/ElementMaker.js';
  * selects that aren't in the DOM yet. A late-arriving select fires
  * `idRefs`' `id-referencer:resolved` event, which re-runs `hydrate()`.
  *
- * Two boolean knobs also re-run `hydrate()` via their own compacts:
- * `join` (one comma-joined summary chip per <select> instead of one chip per
- * option) and `readonly` (render for display only — no remove affordances).
+ * Extra knobs also re-run `hydrate()` via their own compacts: `join` (one
+ * comma-joined summary chip per <select> instead of one chip per option),
+ * `readonly` (render for display only — no remove affordances), and `maxJoin`
+ * (join only — collapse the summary label to "<n> Selected" past that count).
  *
  * @extends {ElementMaker}
  */
@@ -170,8 +171,24 @@ export class ChipAwayElement extends ElementMaker {
     }
 
     /**
-     * `join` mode: collapse every selected option into a single chip whose
-     * label is a comma-delimited list. Its ✕ (unless `removable` is false)
+     * Label for the single `join`-mode chip. Defaults to the selected option
+     * texts joined by `', '`, switching to `"<n> Selected"` once the count
+     * exceeds `maxJoin` (when that prop is set).
+     * @param {HTMLOptionElement[]} selectedOptions
+     * @returns {string}
+     */
+    joinLabel(selectedOptions) {
+        const { maxJoin } = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
+        if (typeof maxJoin === 'number' && Number.isFinite(maxJoin)
+            && selectedOptions.length > maxJoin) {
+            return `${selectedOptions.length} Selected`;
+        }
+        return selectedOptions.map(option => option.textContent).join(', ');
+    }
+
+    /**
+     * `join` mode: collapse every selected option into a single chip. Its label
+     * comes from {@linkcode joinLabel}; its ✕ (unless `removable` is false)
      * clears all selected options for this `<select>` (routed through
      * {@linkcode #clearButtonToSelectMap}).
      * @param {HTMLSelectElement} select
@@ -194,8 +211,7 @@ export class ChipAwayElement extends ElementMaker {
         const container = this.createChipsContainer(select, removable);
         container.querySelectorAll('.chip').forEach(chip => chip.remove());
 
-        const label = selectedOptions.map(option => option.textContent).join(', ');
-        const { chip, button } = this.createChip(label, removable);
+        const { chip, button } = this.createChip(this.joinLabel(selectedOptions), removable);
         if (button) {
             button.ariaLabel = 'Remove all';
             this.#clearButtonToSelectMap.set(button, select);
@@ -245,8 +261,9 @@ export class ChipAwayElement extends ElementMaker {
     /**
      * Feed the current `splitFor` id list to `idRefs` and (re-)render chips for
      * every currently-resolved <select>. Invoked by roundabout's
-     * `when_{splitFor,join,readonly}_changes_call_hydrate` compacts and by the
-     * `id-referencer:resolved` event when a referenced select appears later.
+     * `when_{splitFor,join,readonly,maxJoin}_changes_call_hydrate` compacts and
+     * by the `id-referencer:resolved` event when a referenced select appears
+     * later.
      * @param {RunTimeProps} self
      */
     hydrate(self) {

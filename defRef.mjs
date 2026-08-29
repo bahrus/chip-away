@@ -11,20 +11,23 @@ const props = {
     for: 'for',
     splitFor: 'splitFor',
     join: 'join',
-    readonly: 'readonly'
+    readonly: 'readonly',
+    maxJoin: 'maxJoin'
 };
 
 /**
  * `for` (space-separated ids) is parsed to `splitFor` (string[]) by the
- * `splitter` parser below; the boolean `join` and `readonly` attributes are
- * parsed once (at spawn) to like-named properties. Any of these compacts calls
- * `hydrate`, which hands `splitFor` to the `idRefs` feature for id -> live
- * element resolution and re-renders: `join` picks one comma-joined summary chip
- * vs. one chip per option, `readonly` drops every remove (✕) affordance.
+ * `splitter` parser below; the boolean `join` / `readonly` and numeric
+ * `max-join` attributes are parsed once (at spawn) to their properties. Any of
+ * these compacts calls `hydrate`, which hands `splitFor` to the `idRefs`
+ * feature for id -> live element resolution and re-renders: `join` picks one
+ * comma-joined summary chip vs. one chip per option, `readonly` drops every
+ * remove (✕) affordance, and `maxJoin` (join only) switches the summary label
+ * to "<n> Selected" once the selected count exceeds it.
  *
- * `join` / `readonly` are plain config, not `sourceOfTruth` attributes: the
- * attribute seeds the initial value, and thereafter the property is
- * authoritative.
+ * `join` / `readonly` / `maxJoin` are plain config, not `sourceOfTruth`
+ * attributes: the attribute seeds the initial value, and thereafter the
+ * property is authoritative.
  * @type {RAConfig<AP, Actions, AP>}
  */
 const raConfig = {
@@ -32,6 +35,7 @@ const raConfig = {
         when_splitFor_changes_call_hydrate: 0,
         when_join_changes_call_hydrate: 0,
         when_readonly_changes_call_hydrate: 0,
+        when_maxJoin_changes_call_hydrate: 0,
     },
 };
 
@@ -57,6 +61,11 @@ const withAttrs = {
     _readonly: {
         instanceOf: 'Boolean',
         valIfNull: false,
+    },
+    maxJoin: 'max-join',
+    _maxJoin: {
+        instanceOf: 'Number',
+        // no valIfNull: absent attribute leaves `maxJoin` undefined (no limit)
     }
 };
 

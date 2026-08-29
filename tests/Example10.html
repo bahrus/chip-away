@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chip Away - max-join</title>
+    <!--#include virtual="/imports.html" -->
+    <link rel="stylesheet" href="../default.css">
+</head>
+<body>
+    <label>
+        <span>Select Options:</span>
+        <select id="select1" multiple>
+            <option selected value="option1">Option 1</option>
+            <option selected value="option2">Option 2</option>
+            <option selected value="option3">Option 3</option>
+            <option value="option4">Option 4</option>
+        </select>
+    </label>
+
+    <chip-away for="select1" join max-join="2"></chip-away>
+
+    <script type="module">
+        import '../index.js';
+
+        const el = document.querySelector('chip-away');
+        const label = () => document.querySelector('.chip span')?.textContent;
+
+        async function runTest(){
+            const mark = v => document.getElementById('target').setAttribute('mark', v);
+            const step = async () => new Promise(r => setTimeout(r, 200));
+
+            // 3 selected > max-join 2  ->  "3 Selected"
+            if(document.querySelectorAll('.chip').length !== 1){ mark('bad'); return; }
+            if(label() !== '3 Selected'){ mark('bad'); return; }
+
+            // raise the limit above the count -> falls back to the joined list
+            el.maxJoin = 5;
+            await step();
+            if(label() !== 'Option 1, Option 2, Option 3'){ mark('bad'); return; }
+
+            // clear the limit entirely -> still the joined list
+            el.maxJoin = undefined;
+            await step();
+            if(label() !== 'Option 1, Option 2, Option 3'){ mark('bad'); return; }
+
+            // drop it back to 2, then deselect one so count (2) no longer exceeds it
+            el.maxJoin = 2;
+            await step();
+            if(label() !== '3 Selected'){ mark('bad'); return; }
+            select1.querySelector('[value="option3"]').selected = false;
+            select1.dispatchEvent(new Event('change', { bubbles: true }));
+            await step();
+            if(label() !== 'Option 1, Option 2'){ mark('bad'); return; }
+
+            mark('good');
+        }
+
+        setTimeout(runTest, 1000);
+    </script>
+
+    <div id="target"></div>
+</body>
+</html>

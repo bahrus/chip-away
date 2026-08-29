@@ -81,15 +81,15 @@ The `chip-away` component monitors the select elements referenced in the `for` a
     <fieldset>
         <legend>
             Select 1
-            <button class="clear-all-trigger" data-clear-select-id="select1"></button>
+            <button type="button" class="clear-all-trigger" aria-label="Clear all"></button>
         </legend>
-        <div class="chip">
+        <div class="chip" part="chip-remove-option-container">
             <span>Option 1</span>
-            <button type="button">✕</button>
+            <button type="button" part="chip-remove-option-trigger" aria-label="Remove"></button>
         </div>
-        <div class="chip">
+        <div class="chip" part="chip-remove-option-container">
             <span>Option 2</span>
-            <button type="button">✕</button>
+            <button type="button" part="chip-remove-option-trigger" aria-label="Remove"></button>
         </div>
     </fieldset>
 </chip-away>
@@ -97,8 +97,10 @@ The `chip-away` component monitors the select elements referenced in the `for` a
 
 Each selected option appears as a chip with:
 - A **span** displaying the option text
-- An **× button** to remove the option from the select element
+- A **remove button** (styled as an × via CSS) that deselects that option
 - Each fieldset includes a "Clear All" button in the legend to deselect all options at once
+
+The `part` attributes (`chip-remove-option-container`, `chip-remove-option-trigger`) expose the chip and its button for `::part()` styling from outside a Shadow DOM host.
 
 Clicking the × button on a chip automatically deselects that option and updates the chip display in real-time. Clicking the "Clear All" button removes all chips for that select element.
 
@@ -110,19 +112,50 @@ The component intelligently determines the legend text for each select element u
 2. **If the select has an `id` and a `<label for="...">` exists**: Uses the label's text content
 3. **Fallback**: Uses the select element's `id`
 
-## Custom Naming
+## Configuration
 
-The component is distributed as a class and automatically boots up when the module is imported. The canonical name is `<chip-away>`, registered by default.
+| Attribute | Property | Type | Default | Effect |
+| --- | --- | --- | --- | --- |
+| `for` | `for` | string (space-separated ids) | — (required) | The `<select>` element ids to mirror as chips. Referenced selects that aren't in the DOM yet are waited for (via a `MutationObserver`) and picked up when they appear. |
+| `join` | `join` | boolean | `false` | Collapse each `<select>` to a **single** chip whose label is the selected option texts joined by `", "`, instead of one chip per option. The chip's ✕ clears every selected option for that `<select>`. |
+| `readonly` | `readonly` | boolean | `false` | Render for display only: no per-option ✕, no per-`<select>` "clear all", no ✕ on the joined chip. The referenced `<select>` elements are not otherwise touched. |
+| `max-join` | `maxJoin` | number | *(unset — no limit)* | **`join` only.** Once the number of selected options *exceeds* this, the summary chip's label becomes `"<n> Selected"` instead of the joined list. |
 
-To use a custom element name, import the class and register it yourself:
+### Attribute vs. property
 
-```javascript
-import { ChipAway } from 'chip-away/chip-away.js';
+- **`for`** is read when the element initializes.
+- **`join`, `readonly`, `max-join`** are plain configuration, not reflected/observed attributes. The attribute **seeds the initial value** at load time; after that the **property** is authoritative — set `el.join`, `el.readonly`, or `el.maxJoin` in JavaScript to change the behavior and the component re-renders. Changing the attribute after load has no effect, and the property is not written back to the attribute.
 
-customElements.define('my-custom-chips', ChipAway);
+```html
+<!-- initial config in markup -->
+<chip-away for="colors sizes" join max-join="3"></chip-away>
 ```
 
-Then use it as `<my-custom-chips for="select1 select2"></my-custom-chips>`
+```js
+// change it later
+const el = document.querySelector('chip-away');
+el.readonly = true;      // freeze
+el.maxJoin = undefined;  // remove the "<n> Selected" cap
+el.join = false;         // back to one chip per option
+```
+
+## Custom Naming
+
+Importing the package entry point (`chip-away`, or `chip-away/index.js`) registers `<chip-away>`
+for you. To register under a different tag name instead, import the class and its feature wiring
+directly and define it yourself — **don't** also import the entry point, since a class can only be
+registered once:
+
+```javascript
+import { ChipAwayElement } from 'chip-away/chip-away-element.js';
+import { wireFeatures } from 'chip-away/wireFeatures.js';
+import defRef from 'chip-away/defRef.json' with { type: 'json' };
+
+await wireFeatures(ChipAwayElement, defRef);
+customElements.define('my-custom-chips', ChipAwayElement);
+```
+
+Then use it as `<my-custom-chips for="select1 select2"></my-custom-chips>`.
 
 ## VS Code Extension: idref
 
@@ -175,9 +208,10 @@ mean to change the read-only behavior.
 | `createChipElement(option, removable)` → `HTMLElement` | One chip for one selected option; its ✕ deselects that option. |
 | `createChipsContainer(select, removable)` → `HTMLFieldSetElement` | The `<fieldset>` + `<legend>` wrapper (with the "clear all" trigger unless `!removable`). Cached per select `id`. |
 | `renderSelectChips(select, removable)` | Renders one chip per selected option into the container. |
-| `renderJoinedChip(select, removable)` | `join` mode: renders a single chip whose label is the selected option texts joined by `', '`. |
+| `renderJoinedChip(select, removable)` | `join` mode: renders a single chip; its label comes from `joinLabel`. |
+| `joinLabel(selectedOptions)` → `string` | Label for the `join`-mode chip. Default: option texts joined by `', '`, or `"<n> Selected"` once the count exceeds `maxJoin` (when set). |
 | `renderSelect(select)` | Dispatches to `renderJoinedChip` / `renderSelectChips` based on `join`, and derives `removable` from `readonly`. |
-| `hydrate(self)` | Entry point from the `when_{splitFor,join,readonly}_changes_call_hydrate` compacts and the `id-referencer:resolved` event. `self` is the runtime props (`splitFor`, `join`, `readonly`, `idRefs`, …). Rebuilds every fieldset, then calls `renderSelect` per resolved `<select>`. |
+| `hydrate(self)` | Entry point from the `when_{splitFor,join,readonly,maxJoin}_changes_call_hydrate` compacts and the `id-referencer:resolved` event. `self` is the runtime props (`splitFor`, `join`, `readonly`, `maxJoin`, `idRefs`, …). Rebuilds every fieldset, then calls `renderSelect` per resolved `<select>`. |
 
 ## License
 
