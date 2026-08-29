@@ -12,7 +12,7 @@ const DEFAULT_EVENT_TYPE = 'id-referencer:resolved';
  * until it proves out; the class name `IdRefs` matches the intended package
  * export). Unlike the package README's first sketch, this variant does **not**
  * read a host attribute — the host hands it an already-split `string[]` of ids
- * via {@linkcode IdRefs#search}. That keeps the id-list parsing (attribute →
+ * via the {@linkcode IdRefs#searchFor} setter. That keeps the id-list parsing (attribute →
  * `string[]`) in the host's reactive graph (roundabout `splitter` parser) and
  * leaves this feature with the single reusable job: `string[]` → live
  * `Element[]`, with "wait for the missing ones" built in.
@@ -97,7 +97,7 @@ export class IdRefs {
      * the same ids in the same order is a no-op.
      *
      * Resolves synchronously against the host's root node; the caller is
-     * expected to read {@linkcode get} right after. If any id is still missing,
+     * expected to read {@linkcode elements} right after. If any id is still missing,
      * a MutationObserver is kept alive on the root node until it appears, and
      * `eventType` is dispatched on the host when a later (DOM-mutation-driven)
      * pass changes the resolved set. The synchronous pass here never dispatches.
@@ -115,7 +115,7 @@ export class IdRefs {
 
     /**
      * The resolved, still-connected elements, in the order their ids were
-     * passed to {@linkcode search}.
+     * passed to {@linkcode IdRefs#searchFor}.
      * @returns {Element[]}
      */
     get elements() {
