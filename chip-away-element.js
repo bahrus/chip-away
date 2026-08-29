@@ -200,6 +200,16 @@ export class ChipAwayElement extends ElementMaker {
         const { signal } = this.#abortController;
         this.addEventListener('click', this, { signal });
         this.addEventListener('id-referencer:resolved', this, { signal });
+
+        // Rebuild chips from current truth on every (re)connect. roundabout's
+        // `when_splitFor_changes_call_hydrate` compact only fires on an actual
+        // `splitFor` change, so a disconnect/reconnect cycle — where `splitFor`
+        // is unchanged — would otherwise leave the chips (torn down in
+        // `#cleanup()`) permanently missing. Guarded on `splitFor` being
+        // populated so the very first connect, if it lands here before
+        // roundabout has parsed `for`, is left to the compact.
+        const self = /** @type {AP} */ (/** @type {unknown} */ (this));
+        if (self.splitFor?.length) this.hydrate(self);
     }
 
     /**
