@@ -27,7 +27,7 @@ const DEFAULT_EVENT_TYPE = 'id-referencer:resolved';
  * Consumption:
  * ```js
  * el.idRefs.searchFor = ['sel1', 'sel2'];   // (re)point at these ids
- * el.idRefs.get();                       // Element[] — resolved, still-connected, in order
+ * el.idRefs.elements;                       // Element[] — resolved, still-connected, in order
  * el.idRefs.complete;                    // boolean
  * el.addEventListener('id-referencer:resolved', e => { ... });
  * ```
@@ -118,7 +118,7 @@ export class IdRefs {
      * passed to {@linkcode search}.
      * @returns {Element[]}
      */
-    get() {
+    get elements() {
         /** @type {Element[]} */
         const out = [];
         for (const ref of this.#refs) {
@@ -130,7 +130,7 @@ export class IdRefs {
 
     /** True once every id has been resolved to a still-connected element. */
     get complete() {
-        return this.get().length >= this.#ids.length;
+        return this.elements.length >= this.#ids.length;
     }
 
     // ─── internals ───────────────────────────────────────────────────────────
@@ -148,7 +148,7 @@ export class IdRefs {
      */
     #resolve(dispatch) {
         const root = this.#root();
-        const before = dispatch ? this.get() : null;
+        const before = dispatch ? this.elements : null;
 
         let missing = 0;
         for (let i = 0; i < this.#ids.length; i++) {
@@ -165,7 +165,7 @@ export class IdRefs {
         if (missing > 0 && this.#connected) this.#arm();
         else this.#rest();
 
-        if (dispatch && before && !sameElements(before, this.get())) this.#dispatch();
+        if (dispatch && before && !sameElements(before, this.elements)) this.#dispatch();
     }
 
     #arm() {
@@ -190,7 +190,7 @@ export class IdRefs {
         host.dispatchEvent(new CustomEvent(this.#eventType, {
             detail: { 
                 ids: this.#ids.slice(), 
-                elements: this.get(),
+                elements: this.elements,
             },
         }));
     }

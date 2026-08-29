@@ -165,7 +165,7 @@ export class ChipAwayElement extends ElementMaker {
         const {idRefs, splitFor} = self;
         idRefs.searchFor = splitFor;
         /** @type {Element[]} */
-        const resolved = idRefs?.get?.() ?? [];
+        const resolved = idRefs.elements;
 
         // Rebuild all fieldsets from scratch.
         this.#selectIDToChipsContainerMap.forEach(fieldset => fieldset.remove());
