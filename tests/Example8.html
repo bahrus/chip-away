@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chip Away - join toggled at runtime</title>
+    <!--#include virtual="/imports.html" -->
+    <link rel="stylesheet" href="../default.css">
+</head>
+<body>
+    <label>
+        <span>Select Options:</span>
+        <select id="select1" multiple>
+            <option selected value="option1">Option 1</option>
+            <option selected value="option2">Option 2</option>
+            <option selected value="option3">Option 3</option>
+        </select>
+    </label>
+
+    <chip-away for="select1"></chip-away>
+
+    <script type="module">
+        import '../index.js';
+
+        const el = document.querySelector('chip-away');
+        const count = () => document.querySelectorAll('.chip').length;
+
+        async function runTest(){
+            const mark = v => document.getElementById('target').setAttribute('mark', v);
+
+            // starts expanded: one chip per option
+            if(count() !== 3){ mark('bad'); return; }
+
+            // flip join on via the property
+            el.join = true;
+            await new Promise(r => setTimeout(r, 200));
+            if(count() !== 1){ mark('bad'); return; }
+            if(document.querySelector('.chip span').textContent !== 'Option 1, Option 2, Option 3'){ mark('bad'); return; }
+
+            // flip it back off
+            el.join = false;
+            await new Promise(r => setTimeout(r, 200));
+            if(count() !== 3){ mark('bad'); return; }
+
+            mark('good');
+        }
+
+        setTimeout(runTest, 1000);
+    </script>
+
+    <div id="target"></div>
+</body>
+</html>
