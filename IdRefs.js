@@ -1,5 +1,5 @@
 // @ts-check
-/** @import {FeatureSpawnContext, IdRefsCustomData} from './types/id-referencer/types' */
+/** @import {FeatureSpawnContext, IdRefsCustomData, IIdRefs} from './types/id-referencer/types' */
 
 const DEFAULT_EVENT_TYPE = 'id-referencer:resolved';
 
@@ -26,11 +26,13 @@ const DEFAULT_EVENT_TYPE = 'id-referencer:resolved';
  *
  * Consumption:
  * ```js
- * el.idRefs.search(['sel1', 'sel2']);   // (re)point at these ids
+ * el.idRefs.searchFor = ['sel1', 'sel2'];   // (re)point at these ids
  * el.idRefs.get();                       // Element[] — resolved, still-connected, in order
  * el.idRefs.complete;                    // boolean
  * el.addEventListener('id-referencer:resolved', e => { ... });
  * ```
+ *
+ * @implements {IIdRefs}
  */
 export class IdRefs {
     /** @type {WeakRef<HTMLElement>} */
@@ -82,6 +84,15 @@ export class IdRefs {
     // ─── public API ──────────────────────────────────────────────────────────
 
     /**
+     * @type {string[]}
+     */
+    #searchFor = [];
+
+    get searchFor(){
+        return this.#searchFor;
+    }
+
+    /**
      * Point the feature at a new list of ids to resolve. Idempotent — passing
      * the same ids in the same order is a no-op.
      *
@@ -91,10 +102,11 @@ export class IdRefs {
      * `eventType` is dispatched on the host when a later (DOM-mutation-driven)
      * pass changes the resolved set. The synchronous pass here never dispatches.
      *
-     * @param {string[]} ids
+     * @param {string[]} nv
      */
-    search(ids) {
-        const next = (ids ?? []).filter(Boolean);
+    set searchFor(nv){
+        this.#searchFor = nv;
+        const next = (nv ?? []); //.filter(Boolean);
         if (sameList(next, this.#ids)) return;
         this.#ids = next.slice();
         this.#refs = new Array(next.length);

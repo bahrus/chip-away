@@ -37,14 +37,27 @@
         </label>
     </div>
 
-    <div>
+    <div id="div">
         <chip-away for="select1 select2"></chip-away>
     </div>
     
 
     <script type="module" src="../index.js"></script>
+    <button onclick="removeTemp()">remove</button>
 
+    <button onclick="addTemp()">add</button>
 
+    <script>
+        const temp = document.querySelector('chip-away');
+
+        function removeTemp(){
+            temp.remove();
+        }
+
+        function addTemp(){
+            div.appendChild(temp);
+        }
+    </script>
 </body>
 
 </html>

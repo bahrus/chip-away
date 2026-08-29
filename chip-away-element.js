@@ -166,7 +166,8 @@ export class ChipAwayElement extends ElementMaker {
     hydrate(self) {
         const rt = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
         const idRefs = rt.idRefs;
-        idRefs?.search?.(self?.splitFor ?? rt.splitFor ?? []);
+        const splitFor = self?.splitFor ?? rt.splitFor ?? [];
+        idRefs.searchFor = splitFor;
         /** @type {Element[]} */
         const resolved = idRefs?.get?.() ?? [];
 
@@ -179,6 +180,14 @@ export class ChipAwayElement extends ElementMaker {
             el.addEventListener('change', this, { signal: this.#abortController?.signal });
             this.#renderSelectChips(el);
         }
+    }
+
+    /**
+     * 
+     * @param {AP} self 
+     */
+    temp(self){
+        console.log({self});
     }
 
     /**

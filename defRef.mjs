@@ -21,6 +21,12 @@ const props = {
 const raConfig = {
     compacts: {
         when_splitFor_changes_call_hydrate: 0,
+        //when_isConnected_changes_call_temp: 0,
+    },
+    actions: {
+        temp: {
+            //ifAllOf: ['isConnected']
+        }
     }
 };
 
