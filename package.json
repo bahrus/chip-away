@@ -1,6 +1,6 @@
 {
   "name": "chip-away",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Custom element that renders removable chips from selected options of one or more select elements",
   "homepage": "https://github.com/bahrus/chip-away#readme",
   "bugs": {
