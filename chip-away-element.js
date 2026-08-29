@@ -159,13 +159,10 @@ export class ChipAwayElement extends ElementMaker {
      * every currently-resolved <select>. Invoked by roundabout's
      * `when_splitFor_changes_call_hydrate` compact and by the
      * `id-referencer:resolved` event when a referenced select appears later.
-     * @param {AP} self
+     * @param {RunTimeProps} self
      */
     hydrate(self) {
-        const rt = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
-        const idRefs = rt.idRefs;
-        const {splitFor} = self;
-        //const splitFor = self?.splitFor ?? rt.splitFor ?? [];
+        const {idRefs, splitFor} = self;
         idRefs.searchFor = splitFor;
         /** @type {Element[]} */
         const resolved = idRefs?.get?.() ?? [];
@@ -181,13 +178,6 @@ export class ChipAwayElement extends ElementMaker {
         }
     }
 
-    /**
-     * 
-     * @param {AP} self 
-     */
-    temp(self){
-        console.log({self});
-    }
 
     /**
      * Connect the element: wire up listeners and perform initial render.
