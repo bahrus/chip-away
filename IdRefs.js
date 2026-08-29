@@ -188,7 +188,10 @@ export class IdRefs {
         const host = this.#hostRef.deref();
         if (!host) return;
         host.dispatchEvent(new CustomEvent(this.#eventType, {
-            detail: { ids: this.#ids.slice(), elements: this.get() },
+            detail: { 
+                ids: this.#ids.slice(), 
+                elements: this.get(),
+            },
         }));
     }
 }
