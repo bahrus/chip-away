@@ -196,7 +196,7 @@ export class ChipAwayElement extends ElementMaker {
         // `#cleanup()`) permanently missing. Guarded on `splitFor` being
         // populated so the very first connect, if it lands here before
         // roundabout has parsed `for`, is left to the compact.
-        const self = /** @type {AP} */ (/** @type {unknown} */ (this));
+        const self = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
         if (self.splitFor?.length) this.hydrate(self);
     }
 
@@ -217,7 +217,7 @@ export class ChipAwayElement extends ElementMaker {
      */
     handleEvent(e) {
         const { type, target } = e;
-        const self = /** @type {AP} */ ( /** @type {any} */(this));
+        const self = /** @type {RunTimeProps} */ ( /** @type {any} */(this));
         if (type === 'id-referencer:resolved') {
             this.hydrate(self);
             return;
