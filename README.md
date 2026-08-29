@@ -136,74 +136,48 @@ This is especially helpful when managing multiple select elements across your HT
 
 ## Extending with Custom Markup
 
-The component is designed to be subclassed for custom rendering. The implementation uses the `trans-render/froop` pattern, and exposes the following methods:
+`ChipAwayElement` is designed to be subclassed for custom rendering. The rendering
+pipeline is a set of **plain public methods** — override any of them in a subclass
+and it is picked up automatically (every internal call goes through `this`). Call
+`super.<method>(...)` to reuse the default output and then adjust it.
 
-### Methods You Can Override
+```js
+import { ChipAwayElement } from 'chip-away/chip-away-element.js';
 
-#### `#getLegendText(self, select)`
-Determines the legend text displayed in the fieldset for a given select element.
+class MyChips extends ChipAwayElement {
+    getLegendText(select) {
+        return `Chosen — ${super.getLegendText(select)}`;
+    }
 
-**Parameters:**
-- `self` - The component instance
-- `select` - The HTMLSelectElement reference
+    createChipElement(option, removable) {
+        const chip = super.createChipElement(option, removable); // keeps the ✕ wiring
+        chip.dataset.value = option.value;
+        return chip;
+    }
+}
+customElements.define('my-chips', MyChips);
+```
 
-**Returns:**
-- A string to use as the legend text
+> The button → option and button → select associations are held in private
+> `WeakMap`s, so a subclass that hand-rolls its own delete button can't hook into
+> the built-in remove behavior. Build on `super.createChip(...)` /
+> `super.createChipElement(...)` instead, or wire the `<select>` yourself.
 
-**Override this to:**
-- Customize how legend text is determined
-- Add prefixes, suffixes, or special formatting
+### Methods you can override
 
-#### `#createChipElement(self, select, option)`
-Creates the HTML markup for a single chip representing one selected option.
+`removable` below is `!readonly` — pass it straight through to `super` unless you
+mean to change the read-only behavior.
 
-**Parameters:**
-- `self` - The component instance
-- `select` - The HTMLSelectElement reference
-- `option` - The current HTMLOptionElement being rendered
-
-**Returns:**
-- An HTMLElement (typically a `<label>`) to serve as the chip
-
-**Override this to:**
-- Customize individual chip HTML structure
-- Change styling or layout of chips
-- Modify button behavior or labels
-- Add additional elements or data attributes
-
-#### `#createChipsContainer(self, select)`
-Creates the container element (fieldset) that holds all chips for a specific select element.
-
-**Parameters:**
-- `self` - The component instance
-- `select` - The HTMLSelectElement reference
-
-**Returns:**
-- An HTMLFieldSetElement to serve as the container
-
-**Override this to:**
-- Change the container structure (e.g., use a `<div>` instead of `<fieldset>`)
-- Customize the legend creation
-- Add additional metadata or styling to the container
-
-#### `#renderSelectChips(self, select)`
-Orchestrates the rendering of all chips for a specific select element.
-
-**Parameters:**
-- `self` - The component instance
-- `select` - The HTMLSelectElement reference
-
-**Override this to:**
-- Customize the overall rendering flow for a single select
-- Add custom logic before or after chips are rendered
-
-#### `hydrate(self)`
-Main entry point called when the component's `for` attribute changes or is initially set.
-
-**Override this to:**
-- Customize the overall rendering flow
-- Add custom logic before or after all chips are rendered
-- Control how multiple select elements are processed
+| Method | Role |
+| --- | --- |
+| `getLegendText(select)` → `string` | Legend text for a `<select>`'s fieldset. Default: associated `<label>` text, else the select's `id`. |
+| `createChip(labelText, removable)` → `{ chip, button }` | The shared chip shell: `.chip` > `span` label, plus a delete `<button>` (or `button: null` when `!removable`). Used by both paths below. |
+| `createChipElement(option, removable)` → `HTMLElement` | One chip for one selected option; its ✕ deselects that option. |
+| `createChipsContainer(select, removable)` → `HTMLFieldSetElement` | The `<fieldset>` + `<legend>` wrapper (with the "clear all" trigger unless `!removable`). Cached per select `id`. |
+| `renderSelectChips(select, removable)` | Renders one chip per selected option into the container. |
+| `renderJoinedChip(select, removable)` | `join` mode: renders a single chip whose label is the selected option texts joined by `', '`. |
+| `renderSelect(select)` | Dispatches to `renderJoinedChip` / `renderSelectChips` based on `join`, and derives `removable` from `readonly`. |
+| `hydrate(self)` | Entry point from the `when_{splitFor,join,readonly}_changes_call_hydrate` compacts and the `id-referencer:resolved` event. `self` is the runtime props (`splitFor`, `join`, `readonly`, `idRefs`, …). Rebuilds every fieldset, then calls `renderSelect` per resolved `<select>`. |
 
 ## License
 

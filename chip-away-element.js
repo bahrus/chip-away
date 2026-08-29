@@ -50,12 +50,22 @@ export class ChipAwayElement extends ElementMaker {
         this.#cleanup();
     }
 
+    // ─── Overridable rendering hooks ─────────────────────────────────────────
+    // Subclasses may override any of the public methods below to customize
+    // markup or the per-<select> render flow. They are called through `this`,
+    // so an override is always picked up; call `super.<method>(...)` to reuse
+    // the default and then tweak its result. The button → option / button →
+    // select bookkeeping lives in private WeakMaps, so an override that wants
+    // the built-in remove behavior should build on `super.createChip(...)` /
+    // `super.createChipElement(...)` rather than hand-rolling the button.
+
     /**
-     * Get legend text for a select element.
+     * Legend text for a `<select>`'s fieldset. Defaults to the associated
+     * `<label>` text, else the select's `id`.
      * @param {HTMLSelectElement} select
      * @returns {string}
      */
-    #getLegendText(select) {
+    getLegendText(select) {
         let legendText = select.id || '';
 
         const parentLabel = select.closest('label');
@@ -75,13 +85,13 @@ export class ChipAwayElement extends ElementMaker {
     /**
      * Build the shared chip shell (`.chip` > `span` label, plus a delete
      * `button` unless `removable` is false). Callers own what the button does —
-     * see {@linkcode #createChipElement} (per-option) and
-     * {@linkcode #renderJoinedChip} (per-select summary).
+     * see {@linkcode createChipElement} (per-option) and
+     * {@linkcode renderJoinedChip} (per-select summary).
      * @param {string} labelText
      * @param {boolean} removable
      * @returns {{ chip: HTMLElement, button: HTMLButtonElement | null }}
      */
-    #createChip(labelText, removable) {
+    createChip(labelText, removable) {
         const chip = document.createElement('div');
         chip.classList.add('chip');
         chip.part.add('chip-remove-option-container');
@@ -107,8 +117,8 @@ export class ChipAwayElement extends ElementMaker {
      * @param {boolean} removable
      * @returns {HTMLElement}
      */
-    #createChipElement(option, removable) {
-        const { chip, button } = this.#createChip(option.textContent, removable);
+    createChipElement(option, removable) {
+        const { chip, button } = this.createChip(option.textContent, removable);
         if (button) {
             button.ariaLabel = 'Remove';
             this.#chipToOptionRefs.set(button, option);
@@ -123,7 +133,7 @@ export class ChipAwayElement extends ElementMaker {
      * @param {boolean} removable
      * @returns {HTMLFieldSetElement}
      */
-    #createChipsContainer(select, removable) {
+    createChipsContainer(select, removable) {
         const { id } = select;
         let fieldset = this.#selectIDToChipsContainerMap.get(id);
         if (fieldset) return fieldset;
@@ -132,7 +142,7 @@ export class ChipAwayElement extends ElementMaker {
         this.#selectIDToChipsContainerMap.set(id, fieldset);
 
         const legend = document.createElement('legend');
-        legend.textContent = this.#getLegendText(select);
+        legend.textContent = this.getLegendText(select);
         fieldset.appendChild(legend);
 
         if (removable) {
@@ -152,11 +162,11 @@ export class ChipAwayElement extends ElementMaker {
      * chip per option) and `readonly` (no remove affordances).
      * @param {HTMLSelectElement} select
      */
-    #renderSelect(select) {
+    renderSelect(select) {
         const { join, readonly } = /** @type {RunTimeProps} */ (/** @type {unknown} */ (this));
         const removable = !readonly;
-        if (join) this.#renderJoinedChip(select, removable);
-        else this.#renderSelectChips(select, removable);
+        if (join) this.renderJoinedChip(select, removable);
+        else this.renderSelectChips(select, removable);
     }
 
     /**
@@ -167,7 +177,7 @@ export class ChipAwayElement extends ElementMaker {
      * @param {HTMLSelectElement} select
      * @param {boolean} removable
      */
-    #renderJoinedChip(select, removable) {
+    renderJoinedChip(select, removable) {
         const selectedOptions = Array.from(select.selectedOptions)
             .filter(option => option.value !== '');
 
@@ -181,11 +191,11 @@ export class ChipAwayElement extends ElementMaker {
             return;
         }
 
-        const container = this.#createChipsContainer(select, removable);
+        const container = this.createChipsContainer(select, removable);
         container.querySelectorAll('.chip').forEach(chip => chip.remove());
 
         const label = selectedOptions.map(option => option.textContent).join(', ');
-        const { chip, button } = this.#createChip(label, removable);
+        const { chip, button } = this.createChip(label, removable);
         if (button) {
             button.ariaLabel = 'Remove all';
             this.#clearButtonToSelectMap.set(button, select);
@@ -202,7 +212,7 @@ export class ChipAwayElement extends ElementMaker {
      * @param {HTMLSelectElement} select
      * @param {boolean} removable
      */
-    #renderSelectChips(select, removable) {
+    renderSelectChips(select, removable) {
         const selectedOptions = Array.from(select.selectedOptions)
             .filter(option => option.value !== '');
 
@@ -216,14 +226,14 @@ export class ChipAwayElement extends ElementMaker {
             return;
         }
 
-        const container = this.#createChipsContainer(select, removable);
+        const container = this.createChipsContainer(select, removable);
 
         // Clear existing chips (but keep the legend)
         const existingChips = container.querySelectorAll('.chip');
         existingChips.forEach(chip => chip.remove());
 
         for (const option of selectedOptions) {
-            const chip = this.#createChipElement(option, removable);
+            const chip = this.createChipElement(option, removable);
             container.appendChild(chip);
         }
 
@@ -253,7 +263,7 @@ export class ChipAwayElement extends ElementMaker {
         for (const el of resolved) {
             if (!(el instanceof HTMLSelectElement)) continue;
             el.addEventListener('change', this, { signal: this.#abortController?.signal });
-            this.#renderSelect(el);
+            this.renderSelect(el);
         }
     }
 
@@ -325,7 +335,7 @@ export class ChipAwayElement extends ElementMaker {
 
             case 'change':
                 if (!(target instanceof HTMLSelectElement)) return;
-                this.#renderSelect(target);
+                this.renderSelect(target);
                 break;
         }
     }
