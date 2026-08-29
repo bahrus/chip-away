@@ -28,6 +28,6 @@
   },
   "dependencies": {
     "assign-gingerly": "0.0.87",
-    "el-maker": "0.0.22"
+    "el-maker": "0.0.23"
   }
 }

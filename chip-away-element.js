@@ -23,13 +23,10 @@ import { ElementMaker } from 'el-maker/ElementMaker.js';
  * @extends {ElementMaker}
  */
 export class ChipAwayElement extends ElementMaker {
-    static supportedFeatures = {
-        ...ElementMaker.supportedFeatures,
-        idRefs: {
-            fallbackSpawn: () => import('./IdRefs.js').then(m => m.IdRefs),
-            callbackForwarding: ['connectedCallback', 'disconnectedCallback'],
-        },
-    };
+    // `idRefs` (and the rest) come from `ElementMaker.supportedFeatures`; chip-away
+    // adds no features of its own. `wireFeatures.js` opts `idRefs` in and forwards
+    // its lifecycle callbacks.
+    static supportedFeatures = { ...ElementMaker.supportedFeatures };
 
     /** @type {WeakMap<HTMLElement, HTMLOptionElement>} */
     #chipToOptionRefs = new WeakMap();
