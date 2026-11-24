@@ -23,11 +23,11 @@
     "build": "node defRef.mjs > defRef.json"
   },
   "devDependencies": {
-    "@playwright/test": "1.62.1",
-    "spa-ssi": "0.0.27"
+    "@playwright/test": "1.65.1",
+    "spa-ssi": "0.0.32"
   },
   "dependencies": {
-    "assign-gingerly": "0.0.87",
-    "el-maker": "0.0.23"
+    "assign-gingerly": "0.0.109",
+    "el-maker": "0.0.28"
   }
 }
