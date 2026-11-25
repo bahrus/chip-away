@@ -127,3 +127,35 @@ The prototype also listens for that `change` on the host itself, to bump `rev`.
 1. Does anyone rely on the subclass hooks?
 2. Is partial legend support (gap 5) enough, or should every label shape keep working?
 3. For gap 4, would you prefer the comparing switch or the template pipe?
+
+## Bruce's Response I
+
+Let's go in baby steps.
+
+Can you please provide a detailed proposal 
+
+1. **`dispatch` 
+
+in [assign-gingerly chats](../../../beGingerly/assign-gingerly/docs/Chats/)?
+
+
+## Claude's Response II
+
+The proposal is in [DispatchTo.md](../../../beGingerly/assign-gingerly/docs/Chats/Commands/+=/TODO/DispatchTo.md), beside the earlier DispatchSupport chat. In short: an optional `to` path on `dispatch`, resolved against the host when the event fires. With a patched copy of the handler, the prototype's chip ✕ now fires `change` on the select (gap 1). Nothing in assign-gingerly was changed apart from adding that file.
+
+## Bruce's Response II
+
+Can we do the sme now for:
+
+>  2. **`get.key` 
+
+Please provide a full example and context.  I actually don't remember what get.key is.
+
+
+## Claude's Response III
+
+The proposal is in [KeyScope.md](../../../beGingerly/assign-gingerly/docs/Chats/Commands/+=/TODO/KeyScope.md). It starts with what `get.key` is, then works through the two-chip-aways example.
+
+In short: `get.key` stops a repeated `assignFrom` call from stacking listeners. It doesn't consider the host, so two chip-aways on one select cancel each other. I propose an opt-in, `get: { key: 'chip-away', keyScope: 'host' }`. With it, both stay up to date in the prototype.
+
+On 0.0.110 with `dispatch.at`, gap 1 is closed in the prototype. While testing I also found two bugs in how keyed listeners attach and abort; they're in the proposal.
