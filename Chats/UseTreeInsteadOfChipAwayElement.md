@@ -175,3 +175,21 @@ The proposal, with a dozen examples, is in [PluckPipe.md](../../../beGingerly/as
 In short: a data pipe, `{ pluck: '?.textContent' }`, that reads one property from each item of any list and returns an array, ready for `join` or `ListFormat`. To weigh against it: chip-away is the only concrete use I found in this repo's neighbors.
 
 Where the prototype stands, on 0.0.111: gaps 1 and 2 are closed. With `pluck`, two function pipes are left (gaps 4 and 5). Gap 6 is now confirmed by running it.
+
+## Bruce's Response IV
+
+Let's move on now to:
+
+> 4. **A ` ?=` result can't be computed text.**
+
+Again, more context and examples would be helpful.
+
+## Claude's Response V
+
+The proposal, with eleven examples, is in [JoinInTernaryResults.md](../../../beGingerly/assign-gingerly/docs/Chats/AssignFrom/Commands/TODO/JoinInTernaryResults.md).
+
+In short: let a ` ?=` result be `{ join: ['?.n', ' items'] }`, which ` =&` and ` :=` already understand. I prefer this to the two options I listed under gap 4, after prototyping all three.
+
+A correction to what I said there: this gap isn't strictly a blocker. There's a workaround with scratch properties that works today, but it's awkward.
+
+Where the prototype stands, on 0.0.112: `pluck` works in it. With this change, one function pipe is left (gap 5), plus the manual `dataPipes.js` import (gap 6).
