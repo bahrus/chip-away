@@ -159,3 +159,19 @@ The proposal is in [KeyScope.md](../../../beGingerly/assign-gingerly/docs/Chats/
 In short: `get.key` stops a repeated `assignFrom` call from stacking listeners. It doesn't consider the host, so two chip-aways on one select cancel each other. I propose an opt-in, `get: { key: 'chip-away', keyScope: 'host' }`. With it, both stay up to date in the prototype.
 
 On 0.0.110 with `dispatch.at`, gap 1 is closed in the prototype. While testing I also found two bugs in how keyed listeners attach and abort; they're in the proposal.
+
+## Bruce's Response III
+
+Let's now do the same for:
+
+3. **Reading one property from each item.**
+
+Please add ample examples so I can confirm if it makes sense to add.
+
+## Claude's Response IV
+
+The proposal, with a dozen examples, is in [PluckPipe.md](../../../beGingerly/assign-gingerly/docs/Chats/AssignFrom/TODO/PluckPipe.md).
+
+In short: a data pipe, `{ pluck: '?.textContent' }`, that reads one property from each item of any list and returns an array, ready for `join` or `ListFormat`. To weigh against it: chip-away is the only concrete use I found in this repo's neighbors.
+
+Where the prototype stands, on 0.0.111: gaps 1 and 2 are closed. With `pluck`, two function pipes are left (gaps 4 and 5). Gap 6 is now confirmed by running it.
