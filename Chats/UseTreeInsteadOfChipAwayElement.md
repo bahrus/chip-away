@@ -430,3 +430,57 @@ Steps 1–3 are done. **Nothing in the class version changed:** `chip-away-eleme
 - **Runtime "subclassing"** (a partial JSON extending `<chip-away>`) isn't explored yet, nor whether `defineWithFeatures` could merge configs.
 - **Only Chromium:** the Playwright config has Firefox and WebKit commented out ("requires css modules"), and I left it that way.
 - **`el-maker.json` is 23 KB** pretty-printed (4 spaces, as the sibling packages do), about 9 KB without whitespace. The class is 13.7 KB with comments.
+
+## Bruce's Response IX
+
+This chat file s getting quite long.  I will raise separate chats for issues I'm seeing, and possibly for the still open items.
+
+The way you organized el-maker.mjs looks good to me.  In your most unbiased opinion, which seems better?  Or is it a matter of pro's and con's?
+## Claude's Response IX
+
+### My opinion
+
+**It's a matter of pros and cons, but I'd lean one way for now: keep the class as the default, and keep the JSON version as the direction.** The JSON version works and is pleasant to read. But for chip-away specifically, consumers would get more cost and more surprises from it today than from the class.
+
+**Why chip-away is a harder case than the siblings.** scratch-box and plus-minus are mostly markup with a little behavior. chip-away is the reverse: little markup, and most of its job is reading *other* elements (selects, options, labels) and reacting to them. That's where JSON is weakest: it works by stringing paths together, where JavaScript can just do it. The legend is the clearest case. Five chained paths approximate what one line of JavaScript does exactly.
+
+### Measured: what a page downloads
+
+Example7 (`join`), unbundled and unminified, as served locally (Chromium):
+
+| | JS + JSON files | Raw | Gzipped (per file) | First chip after |
+|---|---|---|---|---|
+| Class (`index.js`) | 29 | 261 KB | 64 KB | ~120 ms |
+| JSON (`json.js`) | 47 | 466 KB | 122 KB | ~310 ms |
+| JSON (`cede` demo, with be-hive) | 67 | 617 KB | 160 KB | ~160 ms |
+
+So the JSON version **roughly doubles what the page loads** for chip-away alone. Most of it is shared library code: Tree, merges, event binding, data pipes, ternaries. A page that already uses those for other components pays much less extra. Timings on localhost are rough, and minifying and bundling would shrink both columns. These are three runs each, not a benchmark.
+
+### Pros and cons
+
+| | Class | JSON |
+|---|---|---|
+| **Who can maintain it** | Anyone who knows the DOM | Someone fluent in assign-gingerly's operators (` ?=`, ` =&`, ` +=`, `@each`, `keyScope`, pipes) |
+| **When something's wrong** | A stack trace into chip-away's code; breakpoints | Usually a silent wrong value, or a console warning from inside a library. Paths are strings, so typos aren't caught (the same-named-pipe and `??`-after-`join` traps we found are examples) |
+| **Exactness** | Exact (the legend, for instance) | Close: the legend differs for mixed-text labels |
+| **Cleanup on disconnect** | Yes | Not yet |
+| **DOM** | Just what's needed | Wrapper divs (`display:contents`) |
+| **Updates** | Rebuilds every fieldset on any change | Updates in place, keyed by option. Better in principle (fewer DOM changes, a stable DOM for styling and tests), though I haven't seen it matter here |
+| **Extending** | Subclass at runtime, documented | Replace parts at build time; no runtime extension yet |
+| **Code to read** | 13.7 KB of JavaScript (with comments) | About 4 KB of `el-maker.mjs` |
+| **Download** | Smaller (above) | Larger, unless the libraries are shared with other components |
+| **Consistency with siblings** | The exception | Matches the HTML-first family |
+| **Maturity of what it depends on** | Plain DOM | Five features added in the last few days (`at`, `keyScope`, `pluck`, `{ join }` results, roundabout's pipe loading) |
+
+**What the exercise gained regardless.** The JSON effort found and fixed real bugs that affect everyone: keyed listeners attaching out of order, `key` disabling `abortController`, self-named pipes, the ternary permission gap, and descriptors breaking roundabout merges. That's worth something whichever version stays.
+
+### What would change my mind
+
+The JSON version would be the better default for chip-away once:
+
+1. it cleans up on disconnect;
+2. the wrapper divs are gone (gap 7);
+3. its cost is acceptable on the pages that matter. If chip-away mostly appears beside other HTML-first components, the libraries are already there, and the download difference mostly disappears;
+4. a mistake in a path gets reported somewhere, for example by a development-mode check for paths that never resolve.
+
+With those, it would be easier to maintain than the class, for people who know the toolkit.
