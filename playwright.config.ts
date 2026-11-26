@@ -15,6 +15,11 @@ const config: PlaywrightTestConfig = {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    // The same tests, against the JSON-only <chip-away> (json.js / el-maker.json). See tests/fixtures.mjs.
+    {
+      name: 'chromium-json',
+      use: { ...devices['Desktop Chrome'] },
+    },
     // requires css modules
     // {
     //   name: 'firefox',

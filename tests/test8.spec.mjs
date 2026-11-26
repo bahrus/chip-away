@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test8 - toggling the join property at runtime switches rendering', async ({ page }) => {
     await page.goto('./tests/Example8.html');

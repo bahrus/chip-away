@@ -225,3 +225,208 @@ The proposal is in [LoadDataPipes.md](../../../roundabout/Chats/Config/TODO/Load
 In short: roundabout already pre-imports what a config needs before anything runs. It would also import `assign-gingerly/pipes/dataPipes.js` when `assignOptions.pipes` holds a descriptor. That's in `makeRoundaboutReady` (el-maker's path) and in `roundabout()`.
 
 With that patched in, the prototype is JSON only, all in one config, and all its checks pass. That closes the last gap, apart from the "nice to have" wrapper divs (gap 7).
+
+## Bruce's Response VII
+
+I've updated the dependencies so I think we are ready to try out all these enhancements, to see if it is a good fit.
+
+You raised the excellent question of whether switching to an HTML first, really JSON first approach would be more maintainable.  I would definitely want to use DX.tree to make the HTML more readable.  Perhaps we can explore ways of making JSON based configuration easier to "subclass".
+
+Would it be possible to implement the HTML/JSON approach without doing anything to the JS solution, so we could compare side by side, and even support both approaches (for a while)? 
+
+Let me know your thoughts below.
+
+## Claude's Response VIII
+
+### Short answer
+
+**Yes.** The two can live side by side without touching any of the class's files, and the existing tests can check both without being copied.
+
+Before answering, I ran the JSON version against your updated `node_modules` (assign-gingerly 0.0.113, roundabout-lib 0.0.39, el-maker 0.0.29), with **no patches and no function pipes**, and with its tree written in `` tree`…` ``:
+
+| Check | Result |
+|---|---|
+| Example1–10 | All pass |
+| Legends (Example5) | `Select 1:`, `Select 2:` |
+| Remove and re-add the element | Picks up a selection made while detached |
+| A chip's ✕ | The select gets one `change` (a plain `Event`) |
+| Two chip-aways on one select | Both update |
+
+All of this ran in a scratch folder. Nothing in the repo was changed except this document.
+
+### The tree in `` tree`…` ``
+
+This is the whole tree, as it would read in an `el-maker.mjs`. It produces the same JSON as the hand-written prototype.
+
+```JS
+const selected = '?.querySelectorAll?.option:checked:not([value=""])';
+const removable = (button) => choose('!!$root?.readonly', { false: button });
+
+const removeOption = removable(tree`
+    <button type=button part=chip-remove-option-trigger aria-label=Remove
+        @click=${{ get: { stopPropagation: true }, '?.selected': false,
+                   dispatch: { type: 'change', eventCtr: 'Event', at: '?.closest?.select' } }}></button>`);
+
+const clearAll = (attrs) => removable(tree`
+    <button type=button ${attrs}
+        @click=${{ get: { stopPropagation: true }, '?.selectedIndex': -1,
+                   dispatch: { type: 'change', eventCtr: 'Event', at: '?.' } }}></button>`);
+
+const map = {
+    selects: tree`
+        <div style="display:contents" ${each('?.', { key: '?.id' })}>
+            ${choose('!!?.querySelector?.option:checked:not([value=""])', { true: tree`
+                <fieldset>
+                    <legend>
+                        <span ${{ 'textContent ?=': legendText }}></span>
+                        ${clearAll({ 'class :=': 'clear-all-trigger', 'aria-label :=': 'Clear all' })}
+                    </legend>
+                    ${choose('!!$root?.join', {
+                        true: tree`
+                            <div style="display:contents">
+                                <div class=chip part=chip-remove-option-container>
+                                    <span ${{ 'textContent ?=': joinedLabel }}></span>
+                                    ${clearAll({ 'part :=': 'chip-remove-option-trigger', 'aria-label :=': 'Remove all' })}
+                                </div>
+                            </div>`,
+                        false: tree`
+                            <div style="display:contents" ${each(selected, { key: '?.' })}>
+                                <div class=chip part=chip-remove-option-container>
+                                    <span>${'?.textContent'}</span>
+                                    ${removeOption}
+                                </div>
+                            </div>`,
+                    })}
+                </fieldset>` })}
+        </div>`,
+};
+```
+
+`legendText` and `joinedLabel` are the ` ?=` arrays from [LegendTextInJSON.md](./LegendTextInJSON.md) and gap 4. Beside the tree there are four merges, three data pipes and the attribute config, about 25 lines.
+
+| | Size |
+|---|---|
+| `chip-away-element.js` (with comments) | 13.7 KB |
+| `el-maker.mjs` source (tree + merges) | about 4 KB |
+| Generated `el-maker.json` (pretty-printed) | 13 KB |
+
+### A layout for side by side
+
+Nothing existing changes, apart from `package.json`, the README, and an optional Playwright project:
+
+| File | Purpose |
+|---|---|
+| `el-maker.mjs` (new) | Source, with `` tree`…` `` and `paths()` for type checking. `npm run build-el-maker` |
+| `el-maker.json` (new, generated) | What the browser loads |
+| `json.js` (new) | A small JSON-only entry: `defineWithFeatures('chip-away', 'el-maker', config)`. For tests, and for pages without be-hive |
+| `demo/json.html` (new) | The HTML-first way, with no script of chip-away's own: `<script type=cede data-extends=el-maker src="chip-away/el-maker.json">` inside the first `<chip-away>`, as scratch-box does |
+| `playwright.config.ts` | A second project, `chromium-json`, that routes `/index.js` to `/json.js`. **All 11 tests run against both versions, unchanged** |
+
+**One tag name, two definitions.** A page loads one or the other, never both. They'd conflict on `customElements.define`. I'd keep the name `chip-away` for both, so consumers switch by changing one import, and say so in the README.
+
+**Dependencies.** `demo/json.html` needs `be-hive` and `mount-observer` for the `cede` script. I'd add them as dev dependencies only, so consumers of the JS version don't get them.
+
+### Differences a side-by-side comparison would show
+
+Things to fix, or to document as differences:
+
+1. **The wrapper divs** (gap 7): `display:contents`, so they're invisible in layout, but they show in the DOM and break `fieldset > .chip` selectors.
+2. **The legend** differs for labels that mix text and elements (see LegendTextInJSON.md).
+3. **`composed`:** the class's re-fired `change` isn't composed; the JSON's is, by default. Adding `composed: false` to the two `dispatch` configs fixes it.
+4. **Disconnecting:** the class removes its chips and listeners; the JSON version leaves both. Chips come back right on reconnect (tested), but the listeners on the selects keep the element alive while they exist. (This is "related item 3" in KeyScope.md: there's no declarative way yet to stop listening on disconnect.)
+5. **Subclassing,** below.
+
+### Making the JSON easier to "subclass"
+
+Today's README offers eight overridable methods. Here's how each could map, from simplest to most ambitious.
+
+**1. Build-time composition (works today).** `el-maker.mjs` exports its pieces, and a "subclass" is another `.mjs` that imports them, replaces some, and writes its own JSON:
+
+```JS
+// my-chips.mjs
+import { parts, build } from 'chip-away/el-maker.mjs';
+
+export default build({
+    ...parts,
+    legendText: ['?.dataset?.legend', '||', ...parts.legendText],      // like overriding getLegendText
+    chip: (label, button) => tree`<span class=tag>${label}${button}</span>`,  // like overriding createChip
+});
+```
+
+The README's methods map almost one to one onto such parts: `getLegendText` → `legendText`, `joinLabel` → `joinedLabel`, `createChip` → `chip(label, button)`, `createChipsContainer` → `fieldset(legend, chips)`, and so on. This costs nothing at runtime, and the DX gives type checking. **I'd start here.** The catch: customizing needs a build step.
+
+**2. Runtime: a partial config that extends a defined element.** For example `<script type=cede data-extends=chip-away src=my-overrides.json>`, where only the changed parts are given and merged over chip-away's. That's what makes it "subclassing" without a build. I haven't checked whether `defineWithFeatures` / `assignFeatures` merge a subclass's config with the base's today; that would be the first thing to find out. Merging trees is the hard part: specs are arrays, so overriding "the chip" needs a name to address it by.
+
+**3. Named parts in the tree.** For 2 to work, the tree needs names: for example, map keys or snippets for `chip`, `legend` and `removeButton`, which an extension replaces by name. Tree already has named snippets, but they come from JavaScript options by design, so this would need a decision in assign-gingerly.
+
+**And styling needs none of this:** `::part()` and classes already cover most customization, in both versions.
+
+### What I'd do
+
+1. Add the side-by-side files above, with the Playwright project, so both versions run the same 11 tests.
+2. Fix differences 3 (one line) and document 1, 2 and 4.
+3. Structure `el-maker.mjs` as exported parts plus a `build()` (subclassing approach 1).
+4. Use both for a while. Then decide on runtime subclassing (2 and 3), and on whether to retire the class.
+
+### Questions
+
+1. Shall I go ahead with steps 1–3?
+2. One tag name for both (as proposed), or a different name for the JSON version during the trial (e.g. `chip-away-json`)? A different name lets both appear on one page, at the cost of a second name to retire later.
+3. The legend questions in LegendTextInJSON.md are still open. I'd use the chain with the `aria-label` rung unless you say otherwise.
+
+## Bruce's Response VIII
+
+> 1. Shall I go ahead with steps 1–3?
+
+Yes, please.
+
+> 2. One tag name for both (as proposed)
+
+Yes, please.
+
+>  3. The legend questions in LegendTextInJSON.md are still open. I'd use the chain with the `aria-label` rung unless you say otherwise.
+
+Please go with what you recommend.
+## Claude's Implementation Notes VIII
+
+Steps 1–3 are done. **Nothing in the class version changed:** `chip-away-element.js`, `def.js`, `index.js`, `wireFeatures.js`, `defRef.*` are as they were. Nothing is committed.
+
+### New files
+
+| File | What |
+|---|---|
+| [el-maker.mjs](../el-maker.mjs) | The source, written with `` tree`…` ``. Exports `parts` (one per overridable method of the class), `build(parts)` and `render()`. It writes `el-maker.json` only when run, not when imported |
+| [el-maker.json](../el-maker.json) | Generated: `npm run build-el-maker` (watches), or `node el-maker.mjs` |
+| [json.js](../json.js) | `import 'chip-away/json.js'`: defines `<chip-away>` from `el-maker.json`. It only loads and defines; there's no chip-away logic in it |
+| [demo/json.html](../demo/json.html) | The HTML-first way: a `cede` script in the first `<chip-away>`, and no script of chip-away's own. It also has a second `<chip-away join>` on the same select |
+| [tests/fixtures.mjs](../tests/fixtures.mjs) | In projects whose name ends in `-json`, redirects `/index.js` to `/json.js` |
+| `tests/shared-select.spec.mjs` | The two behaviors the old tests didn't cover: a chip's ✕ fires one `change` (an `Event`) on its select; two chip-aways on one select both update |
+| `tests/json-demo.spec.mjs` | The `cede` demo: legends (span and bare-text labels), `join`, no page errors. Runs in the `-json` project only |
+
+### Changed files
+
+- **`playwright.config.ts`:** a second project, `chromium-json`.
+- **`tests/*.spec.mjs`:** each imports `test` from `./fixtures.mjs` rather than `@playwright/test`. Nothing else changed in them.
+- **`package.json`:** `be-hive` 0.1.18 and `mount-observer` 0.1.53 as **dev** dependencies (for the `cede` demo; the latest versions, and what the sibling packages use), and the scripts `build-el-maker` and `test-json`.
+- **`imports.html`:** `be-hive/`, `mount-observer/`, `nested-regex-groups/`.
+- **`README.md`:** an "HTML/JSON-first version (trial)" section: how to use it, the differences from the class, extending it, and the tests.
+
+### Against the plan
+
+- **`composed: false`** is in both `dispatch` configs, so the re-fired `change` matches the class's.
+- **The legend** uses the chain with the `aria-label` rung (see [LegendTextInJSON.md](./LegendTextInJSON.md)).
+- **"Subclassing"** is build-time, through `parts` and `build()`, with an example in the README. I checked in Node that replacing `legendText` and `chip` changes the output everywhere they're used, that the base is unaffected, and that `render()` with no changes gives exactly `el-maker.json`. The parts that are functions call each other through `parts`, so `build()` swaps the replacements in while it runs, and restores the originals afterwards.
+
+### Test results
+
+`npm test`: **27 passed, 1 skipped** (the `cede` demo test, in the class project), Chromium:
+
+- The 11 existing tests, and the 2 new shared-select tests, pass for **both** versions.
+- To make sure the `-json` project really runs the JSON version, I hid `json.js` for a moment: its test1 then failed, and the class's still passed.
+
+### Still open
+
+- **Gap 7** (the wrapper divs) and **cleanup on disconnect** are documented as differences, not fixed.
+- **Runtime "subclassing"** (a partial JSON extending `<chip-away>`) isn't explored yet, nor whether `defineWithFeatures` could merge configs.
+- **Only Chromium:** the Playwright config has Firefox and WebKit commented out ("requires css modules"), and I left it that way.
+- **`el-maker.json` is 23 KB** pretty-printed (4 spaces, as the sibling packages do), about 9 KB without whitespace. The class is 13.7 KB with comments.

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test4 - Clear All button removes all chips', async ({ page }) => {
     await page.goto('./tests/Example4.html');

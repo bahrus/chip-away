@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chip-away, HTML/JSON first</title>
+    <!-- #include virtual="/imports.html" -->
+    <link rel="stylesheet" href="../default.css">
+    <!-- No script of chip-away's own: be-hive defines <chip-away> from the cede script below -->
+    <script type=module>
+        import 'be-hive/be-hive.js';
+        import 'el-maker/def.js';
+    </script>
+</head>
+
+<body>
+    <be-hive></be-hive>
+    <style>
+        div {
+            margin: 10px;
+        }
+    </style>
+    <div>
+        <label>
+            <span>Select 1</span>
+            <select id="select1" multiple>
+                <option value="">-- Please choose an option --</option>
+                <option selected value="option1">Option 1</option>
+                <option value="option2">Option 2</option>
+            </select>
+        </label>
+    </div>
+
+    <div>
+        <label>
+            Select 2
+            <select id="select2">
+                <option value="">-- Please choose an option --</option>
+                <option value="option3">Option 3</option>
+                <option value="option4">Option 4</option>
+            </select>
+        </label>
+    </div>
+
+    <div id="div">
+        <!-- Only the first <chip-away> on a page needs the cede script -->
+        <chip-away for="select1 select2">
+            <script type=cede data-extends=el-maker src="chip-away/el-maker.json"></script>
+        </chip-away>
+    </div>
+
+    <div>
+        <!-- A second instance, on the same select: just the tag -->
+        <chip-away for="select1" join></chip-away>
+    </div>
+
+    <button onclick="removeTemp()">remove</button>
+    <button onclick="addTemp()">add</button>
+
+    <label><input type="checkbox" onchange="temp.join = this.checked"> join</label>
+    <label><input type="checkbox" onchange="temp.readonly = this.checked"> readonly</label>
+    <label>max-join <input type="number" min="0" style="width:4em"
+        onchange="temp.maxJoin = this.value === '' ? undefined : this.valueAsNumber"></label>
+
+    <script>
+        const temp = document.querySelector('chip-away');
+
+        function removeTemp() {
+            temp.remove();
+        }
+
+        function addTemp() {
+            div.appendChild(temp);
+        }
+    </script>
+</body>
+
+</html>

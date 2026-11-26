@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test3 - Clicking chip button removes the chip', async ({ page }) => {
     await page.goto('./tests/Example3.html');

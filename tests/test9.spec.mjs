@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test9 - readonly hides remove affordances; clearing it restores them', async ({ page }) => {
     await page.goto('./tests/Example9.html');

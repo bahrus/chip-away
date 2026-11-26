@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test10 - max-join collapses the join label to "<n> Selected" past the limit', async ({ page }) => {
     await page.goto('./tests/Example10.html');

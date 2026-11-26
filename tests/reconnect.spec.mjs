@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('reconnect - chips come back after remove + re-add', async ({ page }) => {
     await page.goto('./demo/dev.html');

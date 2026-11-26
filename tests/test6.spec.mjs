@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test6 - Referenced select added after connect still renders chips', async ({ page }) => {
     await page.goto('./tests/Example6.html');

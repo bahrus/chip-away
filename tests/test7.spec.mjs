@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test7 - join collapses a select to one comma-delimited chip', async ({ page }) => {
     await page.goto('./tests/Example7.html');

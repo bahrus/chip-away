@@ -136,3 +136,13 @@ Use the chain, with the `aria-label` rung, and update the README's "Legend Text 
 1. Is the chain acceptable, given it differs from the class for labels that mix text and elements?
 2. Add the `aria-label` rung (a change in behavior, I think for the better)?
 3. Do you want alternative A, given that only chip-away needs it so far?
+
+## Bruce's Response I (from UseTreeInsteadOfChipAwayElement.md)
+
+> Please go with what you recommend.
+
+## AI Implementation Notes I
+
+The chain is in `parts.legendText` in [el-maker.mjs](../el-maker.mjs), with the `aria-label` rung before the `id`. Alternative A (a pipe) wasn't added. The README's new "HTML/JSON-first version" section lists the order, and the mixed-text limitation.
+
+`tests/json-demo.spec.mjs` checks two label shapes through the `cede` demo: a `<span>` in the label, and bare text (`Select 2`).

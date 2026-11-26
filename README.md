@@ -215,6 +215,63 @@ mean to change the read-only behavior.
 | `renderSelect(select)` | Dispatches to `renderJoinedChip` / `renderSelectChips` based on `join`, and derives `removable` from `readonly`. |
 | `hydrate(self)` | Entry point from the `when_{splitFor,join,readonly,maxJoin}_changes_call_hydrate` compacts and the `id-referencer:resolved` event. `self` is the runtime props (`splitFor`, `join`, `readonly`, `maxJoin`, `idRefs`, …). Rebuilds every fieldset, then calls `renderSelect` per resolved `<select>`. |
 
+## HTML/JSON-first version (trial)
+
+chip-away also comes as a JSON-only element: the same `<chip-away>`, defined from a configuration
+([el-maker.json](./el-maker.json)) rather than a class. **For now, both are supported**, so they can be
+compared. Use one or the other on a page: both define `<chip-away>`.
+
+**With no script of chip-away's own** ([demo/json.html](./demo/json.html)), using [be-hive](https://github.com/bahrus/be-hive):
+
+```html
+<script type=module>
+    import 'be-hive/be-hive.js';
+    import 'el-maker/def.js';
+</script>
+<be-hive></be-hive>
+
+<!-- Only the first <chip-away> needs the cede script -->
+<chip-away for="select1 select2">
+    <script type=cede data-extends=el-maker src="chip-away/el-maker.json"></script>
+</chip-away>
+<chip-away for="select3"></chip-away>
+```
+
+**Or as a module:** `import 'chip-away/json.js';` instead of `index.js`.
+
+The attributes, properties and markup are the same as above.
+
+### Differences from the class
+
+- **Wrapper elements:** the fieldsets, and the chips inside each fieldset, are wrapped in `<div style="display:contents">`. They don't affect layout, but selectors such as `chip-away > fieldset` or `fieldset > .chip` won't match.
+- **The legend** is found in this order: an element inside the `<label>` (`<label><span>Colors</span><select>`), text before or after the select inside the `<label>`, a `<label for>`, the select's `aria-label`, then its `id`. A label that mixes text and elements (`<label>Pick <b>colors</b>: <select>`) gives only the first element's text. Unlike the class, the text is trimmed, and `aria-label` is used.
+- **Disconnecting:** the class removes its chips and its listeners on the selects. The JSON version keeps both. Its chips are up to date when it's connected again, but its listeners keep it in memory for as long as the selects exist.
+- **Extending** works differently: see below.
+
+### Extending the JSON version
+
+[el-maker.mjs](./el-maker.mjs) is the source of `el-maker.json`. It exports the configuration's `parts`, which correspond to the class's overridable methods (`legendText` to `getLegendText`, `chip` to `createChip`, and so on), and a `build()` function. A "subclass" is a script that replaces some parts and writes its own JSON:
+
+```js
+// my-chips.mjs (run with node)
+import { writeFileSync } from 'fs';
+import { parts, build } from 'chip-away/el-maker.mjs';
+import { tree } from 'assign-gingerly/DX/tree.js';
+
+const config = build({
+    ...parts,
+    legendText: ['?.dataset?.legend', '||', ...parts.legendText],          // a data-legend attribute first
+    chip: (label, button) => tree`<span class=tag><b ${label}></b>${button}</span>`,
+});
+writeFileSync('my-chips.json', JSON.stringify(config, null, 4));
+```
+
+Then point the `cede` script at `my-chips.json`. To work on `el-maker.mjs` itself, `npm run build-el-maker` rebuilds `el-maker.json` when it changes.
+
+### Tests
+
+`npm test` runs every test against both versions: the `chromium` project uses the class, and `chromium-json` uses `json.js` ([tests/fixtures.mjs](./tests/fixtures.mjs)). `npm run test-json` runs only the JSON version.
+
 ## License
 
 MIT

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test2 - Multiple selected options render as chips', async ({ page }) => {
     await page.goto('./tests/Example2.html');

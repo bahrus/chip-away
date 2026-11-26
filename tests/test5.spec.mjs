@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.mjs';
 
 test('test5 - Multiple select elements render separate fieldsets', async ({ page }) => {
     await page.goto('./tests/Example5.html');

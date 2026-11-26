@@ -1,0 +1,320 @@
+{
+    "assignFeatures": {
+        "truthSourcer": {
+            "customData": {
+                "observedAttributes": [
+                    "for"
+                ]
+            }
+        },
+        "idRefs": {},
+        "roundabout": {
+            "customData": {
+                "raConfig": {
+                    "assignOptions": {
+                        "withMethods": [
+                            "querySelectorAll",
+                            "querySelector",
+                            "closest",
+                            "trim"
+                        ],
+                        "pipes": {
+                            "texts": {
+                                "pluck": "?.textContent"
+                            },
+                            "comma": {
+                                "use": "join",
+                                "args": [
+                                    ", "
+                                ]
+                            },
+                            "joined": {
+                                "chain": [
+                                    "texts",
+                                    "comma"
+                                ]
+                            }
+                        }
+                    },
+                    "merges": [
+                        {
+                            "ifKeyIn": [
+                                "splitFor"
+                            ],
+                            "assign": {
+                                "?.idRefs?.searchFor": "?.splitFor",
+                                "?. +=": {
+                                    "on": "id-referencer:resolved",
+                                    "get": {
+                                        "key": "resolved"
+                                    },
+                                    "?.rev +=": 1
+                                }
+                            }
+                        },
+                        {
+                            "ifKeyIn": [
+                                "splitFor",
+                                "rev"
+                            ],
+                            "assign": {
+                                "selects": "?.idRefs?.elements"
+                            }
+                        },
+                        {
+                            "ifKeyIn": [
+                                "selects"
+                            ],
+                            "assign": {
+                                "?.selects?.@each +=": {
+                                    "on": "change",
+                                    "get": {
+                                        "key": "chip-away",
+                                        "keyScope": "host"
+                                    },
+                                    "?.rev +=": 1
+                                }
+                            }
+                        },
+                        {
+                            "ifAllOf": [
+                                "selects"
+                            ],
+                            "ifKeyIn": [
+                                "selects",
+                                "rev",
+                                "join",
+                                "readonly",
+                                "maxJoin"
+                            ],
+                            "assign": {
+                                "?. =>": {
+                                    "do": "builtIns.tree",
+                                    "map": {
+                                        "selects": [
+                                            "div",
+                                            {
+                                                "style :=": "display:contents"
+                                            },
+                                            {
+                                                "each": {
+                                                    "switch": "!!?.querySelector?.option:checked:not([value=\"\"])",
+                                                    "cases": {
+                                                        "true": [
+                                                            "fieldset",
+                                                            {},
+                                                            [
+                                                                [
+                                                                    "legend",
+                                                                    {},
+                                                                    [
+                                                                        [
+                                                                            "span",
+                                                                            {
+                                                                                "textContent ?=": [
+                                                                                    "?.closest?.label?.querySelector?.:scope > :not(select)?.textContent",
+                                                                                    "||",
+                                                                                    "?.closest?.label?.firstChild?.nodeValue?.trim|",
+                                                                                    "||",
+                                                                                    "?.closest?.label?.lastChild?.nodeValue?.trim|",
+                                                                                    "||",
+                                                                                    "?.labels?.0?.textContent?.trim|",
+                                                                                    "||",
+                                                                                    "?.ariaLabel",
+                                                                                    "||",
+                                                                                    "?.id"
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        {
+                                                                            "switch": "!!$root?.readonly",
+                                                                            "cases": {
+                                                                                "false": [
+                                                                                    "button",
+                                                                                    {
+                                                                                        "type :=": "button",
+                                                                                        " +=": {
+                                                                                            "on": "click",
+                                                                                            "get": {
+                                                                                                "stopPropagation": true
+                                                                                            },
+                                                                                            "?.selectedIndex": -1,
+                                                                                            "dispatch": {
+                                                                                                "type": "change",
+                                                                                                "eventCtr": "Event",
+                                                                                                "composed": false,
+                                                                                                "at": "?."
+                                                                                            }
+                                                                                        },
+                                                                                        "class :=": "clear-all-trigger",
+                                                                                        "aria-label :=": "Clear all"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                ],
+                                                                {
+                                                                    "switch": "!!$root?.join",
+                                                                    "cases": {
+                                                                        "true": [
+                                                                            "div",
+                                                                            {
+                                                                                "style :=": "display:contents"
+                                                                            },
+                                                                            [
+                                                                                [
+                                                                                    "div",
+                                                                                    {
+                                                                                        "class :=": "chip",
+                                                                                        "part :=": "chip-remove-option-container"
+                                                                                    },
+                                                                                    [
+                                                                                        [
+                                                                                            "span",
+                                                                                            {
+                                                                                                "textContent ?=": [
+                                                                                                    [
+                                                                                                        "?.querySelectorAll?.option:checked:not([value=\"\"])?.length",
+                                                                                                        ">",
+                                                                                                        "$root?.maxJoin"
+                                                                                                    ],
+                                                                                                    {
+                                                                                                        "join": [
+                                                                                                            "?.querySelectorAll?.option:checked:not([value=\"\"])?.length",
+                                                                                                            " Selected"
+                                                                                                        ]
+                                                                                                    },
+                                                                                                    "?.querySelectorAll?.option:checked:not([value=\"\"])?.joined"
+                                                                                                ]
+                                                                                            }
+                                                                                        ],
+                                                                                        {
+                                                                                            "switch": "!!$root?.readonly",
+                                                                                            "cases": {
+                                                                                                "false": [
+                                                                                                    "button",
+                                                                                                    {
+                                                                                                        "type :=": "button",
+                                                                                                        " +=": {
+                                                                                                            "on": "click",
+                                                                                                            "get": {
+                                                                                                                "stopPropagation": true
+                                                                                                            },
+                                                                                                            "?.selectedIndex": -1,
+                                                                                                            "dispatch": {
+                                                                                                                "type": "change",
+                                                                                                                "eventCtr": "Event",
+                                                                                                                "composed": false,
+                                                                                                                "at": "?."
+                                                                                                            }
+                                                                                                        },
+                                                                                                        "part :=": "chip-remove-option-trigger",
+                                                                                                        "aria-label :=": "Remove all"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            ]
+                                                                        ],
+                                                                        "false": [
+                                                                            "div",
+                                                                            {
+                                                                                "style :=": "display:contents"
+                                                                            },
+                                                                            {
+                                                                                "each": [
+                                                                                    "div",
+                                                                                    {
+                                                                                        "class :=": "chip",
+                                                                                        "part :=": "chip-remove-option-container"
+                                                                                    },
+                                                                                    [
+                                                                                        [
+                                                                                            "span",
+                                                                                            {
+                                                                                                "textContent": "?.textContent"
+                                                                                            }
+                                                                                        ],
+                                                                                        {
+                                                                                            "switch": "!!$root?.readonly",
+                                                                                            "cases": {
+                                                                                                "false": [
+                                                                                                    "button",
+                                                                                                    {
+                                                                                                        "type :=": "button",
+                                                                                                        " +=": {
+                                                                                                            "on": "click",
+                                                                                                            "get": {
+                                                                                                                "stopPropagation": true
+                                                                                                            },
+                                                                                                            "?.selected": false,
+                                                                                                            "dispatch": {
+                                                                                                                "type": "change",
+                                                                                                                "eventCtr": "Event",
+                                                                                                                "composed": false,
+                                                                                                                "at": "?.closest?.select"
+                                                                                                            }
+                                                                                                        },
+                                                                                                        "part :=": "chip-remove-option-trigger",
+                                                                                                        "aria-label :=": "Remove"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        }
+                                                                                    ]
+                                                                                ],
+                                                                                "of": "?.querySelectorAll?.option:checked:not([value=\"\"])",
+                                                                                "key": "?."
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                },
+                                                "of": "?.",
+                                                "key": "?.id"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "defaultPropVals": {
+                        "rev": 0
+                    }
+                }
+            },
+            "withAttrs": {
+                "for": "for",
+                "_for": {
+                    "mapsTo": "splitFor",
+                    "parser": "splitter",
+                    "parserOptions": {
+                        "delimiter": " "
+                    },
+                    "sourceOfTruth": true
+                },
+                "join": "join",
+                "_join": {
+                    "instanceOf": "Boolean",
+                    "valIfNull": false
+                },
+                "readonly": "readonly",
+                "_readonly": {
+                    "instanceOf": "Boolean",
+                    "valIfNull": false
+                },
+                "maxJoin": "max-join",
+                "_maxJoin": {
+                    "instanceOf": "Number"
+                }
+            }
+        }
+    }
+}
