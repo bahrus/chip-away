@@ -193,3 +193,35 @@ In short: let a ` ?=` result be `{ join: ['?.n', ' items'] }`, which ` =&` and `
 A correction to what I said there: this gap isn't strictly a blocker. There's a workaround with scratch properties that works today, but it's awkward.
 
 Where the prototype stands, on 0.0.112: `pluck` works in it. With this change, one function pipe is left (gap 5), plus the manual `dataPipes.js` import (gap 6).
+
+## Bruce's Response V
+
+Let's now please do the same for:
+
+> 5. **The legend text.** Today it's the label's text with the select's own text removed, which no path can say. `'?.closest?.label?.querySelector?.:scope > :not(select)?.textContent'` covers `<label><span>…</span><select>` (all our examples). It doesn't cover `<label>Text <select>`, `<label for>`, or the fallback to `id`.
+   *Proposal:* a ` ?=` `'??'` chain of that path, `'?.labels?.0?.textContent'` (for `<label for>`) and `'?.id'` should cover all but the bare-text form, though I haven't tried it, and it needs care: with a wrapping bare-text label, the second path would include the options' text. Otherwise, a pipe.
+
+I would definitely benefit from at least one good example to make sure it is the optimal solution.
+
+
+
+## Claude's Response VI
+
+The proposal, with an example, is in [LegendTextInJSON.md](./LegendTextInJSON.md). It's here rather than in assign-gingerly, because it needs no assign-gingerly change.
+
+In short: a ` ?=` `||` chain of five paths, one per way of writing a label. I measured it against the class on 13 label shapes: it matches on 11 (and trims where the class doesn't), and differs only where a label mixes text and elements.
+
+With it, the prototype's config is JSON only (its remaining pipes are all data pipes). The one thing left is gap 6: importing `dataPipes.js` by hand.
+
+## Bruce's Response VI
+
+Please create the chat proposal for gap 6 in [roundabout chats](../../../roundabout/Chats/).
+
+
+## Claude's Response VII
+
+The proposal is in [LoadDataPipes.md](../../../roundabout/Chats/Config/TODO/LoadDataPipes.md), in roundabout's `Chats/Config/TODO`.
+
+In short: roundabout already pre-imports what a config needs before anything runs. It would also import `assign-gingerly/pipes/dataPipes.js` when `assignOptions.pipes` holds a descriptor. That's in `makeRoundaboutReady` (el-maker's path) and in `roundabout()`.
+
+With that patched in, the prototype is JSON only, all in one config, and all its checks pass. That closes the last gap, apart from the "nice to have" wrapper divs (gap 7).
